@@ -60,6 +60,29 @@ internal sealed class MongoIndexInitializer(MongoContext context) : IHostedServi
             ],
             cancellationToken);
 
+        await context.Brands.Indexes.CreateOneAsync(
+            new CreateIndexModel<Domain.Brands.Brand>(
+                Builders<Domain.Brands.Brand>.IndexKeys.Ascending(b => b.TenantId).Ascending(b => b.NormalizedName),
+                new CreateIndexOptions { Unique = true, Name = "ux_tenantId_normalizedName" }),
+            cancellationToken: cancellationToken);
+
+        await context.Products.Indexes.CreateManyAsync(
+            [
+                new CreateIndexModel<Domain.Brands.Product>(
+                    Builders<Domain.Brands.Product>.IndexKeys.Ascending(p => p.TenantId).Ascending(p => p.BrandId).Ascending(p => p.Name),
+                    new CreateIndexOptions { Name = "ix_tenantId_brandId_name" }),
+                new CreateIndexModel<Domain.Brands.Product>(
+                    Builders<Domain.Brands.Product>.IndexKeys.Ascending(p => p.TenantId).Ascending(p => p.BrandId).Ascending(p => p.Category),
+                    new CreateIndexOptions { Name = "ix_tenantId_brandId_category" }),
+            ],
+            cancellationToken);
+
+        await context.Media.Indexes.CreateOneAsync(
+            new CreateIndexModel<Domain.Brands.MediaAsset>(
+                Builders<Domain.Brands.MediaAsset>.IndexKeys.Ascending(a => a.TenantId).Ascending(a => a.BrandId).Descending(a => a.CreatedAt),
+                new CreateIndexOptions { Name = "ix_tenantId_brandId_createdAt" }),
+            cancellationToken: cancellationToken);
+
         await context.AuditLog.Indexes.CreateOneAsync(
             new CreateIndexModel<AuditEntry>(
                 Builders<AuditEntry>.IndexKeys.Ascending(a => a.TenantId).Descending(a => a.CreatedAt),

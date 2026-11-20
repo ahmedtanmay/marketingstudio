@@ -19,6 +19,17 @@ internal abstract class TenantScopedRepository<T>(
 
     protected MongoSessionAccessor Sessions { get; } = sessionAccessor;
 
+    /// <summary>For queries the helpers below don't cover. Always wrap filters in <see cref="Scoped"/>.</summary>
+    protected IMongoCollection<T> Collection => collection;
+
+    protected async Task DeleteManyAsync(FilterDefinition<T> filter, CancellationToken cancellationToken)
+    {
+        var session = Sessions.Session;
+        _ = session is null
+            ? await collection.DeleteManyAsync(Scoped(filter), cancellationToken)
+            : await collection.DeleteManyAsync(session, Scoped(filter), cancellationToken: cancellationToken);
+    }
+
     protected FilterDefinition<T> Scoped(FilterDefinition<T>? filter = null)
     {
         var tenantFilter = Builders<T>.Filter.Eq(x => x.TenantId, TenantContext.RequireTenantId());

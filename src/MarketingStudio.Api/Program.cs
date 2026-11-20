@@ -94,5 +94,6 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = c => c
 
 app.MapAuthEndpoints();
 app.MapUserEndpoints();
+app.MapBrandEndpoints();
 
 app.Run();

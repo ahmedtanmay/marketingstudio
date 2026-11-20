@@ -53,6 +53,7 @@ public interface IInviteRepository
 public interface IPlanLimits
 {
     int MaxSeats(string planId);
+    int MaxBrands(string planId);
 }
 
 public interface IAuditLog

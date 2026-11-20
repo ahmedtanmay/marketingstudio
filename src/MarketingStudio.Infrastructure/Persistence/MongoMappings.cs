@@ -1,5 +1,7 @@
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Bson.Serialization.Serializers;
 
 namespace MarketingStudio.Infrastructure.Persistence;
 
@@ -17,6 +19,10 @@ internal static class MongoMappings
         {
             return;
         }
+
+        // Money as Decimal128 (exact), never as double or string.
+        BsonSerializer.TryRegisterSerializer(new DecimalSerializer(BsonType.Decimal128));
+        BsonSerializer.TryRegisterSerializer(new NullableSerializer<decimal>(new DecimalSerializer(BsonType.Decimal128)));
 
         var pack = new ConventionPack
         {

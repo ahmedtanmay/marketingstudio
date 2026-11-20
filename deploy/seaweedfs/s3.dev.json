@@ -1,0 +1,11 @@
+{
+  "identities": [
+    {
+      "name": "marketingstudio-api",
+      "credentials": [
+        { "accessKey": "marketingstudio-dev", "secretKey": "marketingstudio-dev-secret" }
+      ],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}

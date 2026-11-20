@@ -84,6 +84,51 @@ public class TenantIsolationTests(ApiFactory factory)
         (await TeamBuilder.ListUsersAsync(_api, a.Admin)).Single(u => u.Id == aViewer).Role.Should().Be(Roles.Viewer);
     }
 
+    [Fact]
+    [Trait("Story", "TEN-3")]
+    public async Task Tenants_with_identically_named_brands_cannot_reach_each_others_brands_products_or_media()
+    {
+        var http = factory.CreateApiClient();
+        var a = await _api.RegisterAndLoginAsync();
+        var b = await _api.RegisterAndLoginAsync();
+        var aBrand = await BrandApi.CreateAsync(_api, a, "Same Brand");
+        var bBrand = await BrandApi.CreateAsync(_api, b, "Same Brand");
+        var aImage = await BrandApi.UploadAsync(http, a, aBrand.Id);
+        var aProduct = await BrandApi.CreateProductAsync(_api, a, aBrand.Id, BrandApi.Product("Secret Blend", imageIds: aImage.Id));
+
+        var bList = await _api.GetAsync<List<MarketingStudio.Application.Brands.BrandSummary>>("/api/v1/brands", b.AccessToken);
+        var attempts = new (HttpMethod Method, string Path, object? Body)[]
+        {
+            (HttpMethod.Get, $"/api/v1/brands/{aBrand.Id}", null),
+            (HttpMethod.Put, $"/api/v1/brands/{aBrand.Id}", BrandApi.Profile("Hijacked")),
+            (HttpMethod.Put, $"/api/v1/brands/{aBrand.Id}/voice", new { tonePreset = "Playful", guidelines = "", examplePosts = Array.Empty<string>(), bannedTerms = Array.Empty<string>() }),
+            (HttpMethod.Delete, $"/api/v1/brands/{aBrand.Id}?confirmName=Same%20Brand", null),
+            (HttpMethod.Get, $"/api/v1/brands/{aBrand.Id}/products", null),
+            (HttpMethod.Get, $"/api/v1/brands/{aBrand.Id}/products/{aProduct.Id}", null),
+            (HttpMethod.Put, $"/api/v1/brands/{aBrand.Id}/products/{aProduct.Id}", BrandApi.Product("Hijacked")),
+            (HttpMethod.Delete, $"/api/v1/brands/{aBrand.Id}/products/{aProduct.Id}", null),
+            (HttpMethod.Get, $"/api/v1/brands/{bBrand.Id}/products/{aProduct.Id}", null),
+            (HttpMethod.Get, $"/api/v1/brands/{aBrand.Id}/media", null),
+            (HttpMethod.Delete, $"/api/v1/brands/{aBrand.Id}/media/{aImage.Id}", null),
+            (HttpMethod.Delete, $"/api/v1/brands/{bBrand.Id}/media/{aImage.Id}", null),
+        };
+
+        bList.Should().ContainSingle().Which.Id.Should().Be(bBrand.Id);
+        foreach (var (method, path, body) in attempts)
+        {
+            var response = await _api.SendAsync(method, path, b.AccessToken, body);
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound, $"{method} {path}");
+        }
+
+        var upload = await BrandApi.UploadRawAsync(http, b.AccessToken, aBrand.Id, BrandApi.Png, "x.png");
+        upload.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        // Tenant A's data is untouched.
+        (await _api.GetAsync<MarketingStudio.Application.Brands.BrandDto>($"/api/v1/brands/{aBrand.Id}", a.AccessToken)).Name.Should().Be("Same Brand");
+        (await _api.GetAsync<MarketingStudio.Application.Brands.ProductDto>($"/api/v1/brands/{aBrand.Id}/products/{aProduct.Id}", a.AccessToken))
+            .ImageAssetIds.Should().Equal(aImage.Id);
+    }
+
     /// <summary>Swaps the tid claim in the payload but keeps the original signature.</summary>
     private static string TamperTenant(string jwt, string tenantId)
     {

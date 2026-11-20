@@ -37,9 +37,20 @@ public static class DependencyInjection
         services.AddScoped<IInviteRepository, InviteRepository>();
         services.Configure<PlanLimitOptions>(configuration.GetSection(PlanLimitOptions.Section));
         services.AddSingleton<IPlanLimits, ConfiguredPlanLimits>();
+        services.AddScoped<IBrandRepository, BrandRepository>();
+        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IMediaRepository, MediaRepository>();
         services.AddSingleton<IAuditLog, MongoAuditLog>();
         services.AddHostedService<MongoIndexInitializer>();
         services.AddHealthChecks().AddCheck<MongoHealthCheck>("mongodb", tags: ["ready"]);
+
+        // Object storage (S3-compatible; SeaweedFS when self-hosted — Decision Register D31)
+        services.Configure<Storage.StorageOptions>(configuration.GetSection(Storage.StorageOptions.Section));
+        services.AddSingleton<Amazon.S3.IAmazonS3>(sp =>
+            Storage.S3ClientFactory.Create(sp.GetRequiredService<IOptions<Storage.StorageOptions>>().Value));
+        services.AddSingleton<IFileStorage, Storage.S3FileStorage>();
+        services.AddSingleton<IMediaUrlSigner, Storage.DataProtectionMediaUrlSigner>();
+        services.AddHostedService<Storage.StorageBucketInitializer>();
 
         // Data Protection (key ring on a persistent volume in production)
         var dataProtection = services.AddDataProtection().SetApplicationName("MarketingStudio");

@@ -20,6 +20,9 @@ public static class AuditActions
     public const string UserRoleChanged = "user.role_changed";
     public const string UserDeactivated = "user.deactivated";
     public const string UserReactivated = "user.reactivated";
+    public const string BrandCreated = "brand.created";
+    public const string BrandUpdated = "brand.updated";
+    public const string BrandDeleted = "brand.deleted";
 }
 
 /// <summary>Append-only audit record (Security Architecture.md → Audit Logging).</summary>

@@ -104,6 +104,9 @@ internal sealed class InviteRepository(MongoContext context, ITenantContext tena
 /// <summary>Seat limits per plan from configuration (section "Plans"); defaults match Billing and Subscriptions Design.md.</summary>
 internal sealed class ConfiguredPlanLimits(Microsoft.Extensions.Options.IOptions<PlanLimitOptions> options) : IPlanLimits
 {
+    public int MaxBrands(string planId) =>
+        options.Value.Brands.TryGetValue(planId, out var brands) ? brands : options.Value.Brands[Domain.Billing.Subscription.TrialPlanId];
+
     public int MaxSeats(string planId) =>
         options.Value.Seats.TryGetValue(planId, out var seats) ? seats : options.Value.Seats[Domain.Billing.Subscription.TrialPlanId];
 }
@@ -117,6 +120,14 @@ public sealed class PlanLimitOptions
         ["trial"] = 2,
         ["starter"] = 3,
         ["growth"] = 15,
+        ["enterprise"] = 1000,
+    };
+
+    public Dictionary<string, int> Brands { get; set; } = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["trial"] = 1,
+        ["starter"] = 1,
+        ["growth"] = 5,
         ["enterprise"] = 1000,
     };
 }

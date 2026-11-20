@@ -13,6 +13,7 @@ public static class Permissions
     public const string ChannelsManage = "channels.manage";
     public const string BrandsRead = "brands.read";
     public const string BrandsWrite = "brands.write";
+    public const string BrandsDelete = "brands.delete";
     public const string BrandContentWrite = "brands.content.write";
     public const string ProductsRead = "products.read";
     public const string ProductsWrite = "products.write";
@@ -32,7 +33,7 @@ public static class Permissions
 
     public static readonly IReadOnlyList<string> All =
     [
-        UsersManage, BillingManage, UsageRead, ChannelsManage, BrandsRead, BrandsWrite, BrandContentWrite,
+        UsersManage, BillingManage, UsageRead, ChannelsManage, BrandsRead, BrandsWrite, BrandsDelete, BrandContentWrite,
         ProductsRead, ProductsWrite, KnowledgeWrite, CampaignsRead, CampaignsWrite, AgentsRead, AgentsExecute,
         AgentsManage, ContentSubmit, ContentApprove, PostsSchedule, AnalyticsRead, InboxRead, InboxReply,
         PlatformAdmin,

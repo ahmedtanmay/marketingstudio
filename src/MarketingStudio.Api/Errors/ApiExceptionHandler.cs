@@ -19,7 +19,7 @@ internal sealed class ApiExceptionHandler(IProblemDetailsService problems, ILogg
         {
             ValidationException validation => new ValidationProblemDetails(
                 validation.Errors
-                    .GroupBy(e => JsonNamingPolicy.CamelCase.ConvertName(e.PropertyName))
+                    .GroupBy(e => FieldName(e.PropertyName))
                     .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).Distinct().ToArray()))
             {
                 Status = StatusCodes.Status400BadRequest,
@@ -69,4 +69,8 @@ internal sealed class ApiExceptionHandler(IProblemDetailsService problems, ILogg
             Exception = exception,
         });
     }
+
+    /// <summary>"Profile.Languages[0]" → "profile.languages[0]" (camelCase every segment, like the JSON body).</summary>
+    internal static string FieldName(string propertyName) =>
+        string.Join('.', propertyName.Split('.').Select(JsonNamingPolicy.CamelCase.ConvertName));
 }
