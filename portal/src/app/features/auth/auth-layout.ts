@@ -46,6 +46,15 @@ import { MatCardModule } from '@angular/material/card';
       font: var(--mat-sys-headline-small);
       margin: 0;
     }
+    mat-card-subtitle {
+      font: var(--mat-sys-body-large);
+      color: var(--mat-sys-on-surface-variant);
+      margin-top: 4px;
+    }
+    /* Room for the floating label of the first outlined field, so it doesn't touch the subtitle. */
+    mat-card-content {
+      padding-top: 20px;
+    }
   `,
 })
 export class AuthLayout {
