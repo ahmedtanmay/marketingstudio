@@ -15,9 +15,16 @@ public class ArchitectureTests
     private static IEnumerable<string> References(Assembly assembly) =>
         assembly.GetReferencedAssemblies().Select(a => a.Name!);
 
+    /// <summary>
+    /// .NET's own framework assemblies. "netstandard"/"mscorlib" appear when tools such as code-coverage
+    /// instrumentation rewrite the assembly, so they are allowed alongside System.*.
+    /// </summary>
+    private static bool IsFrameworkAssembly(string name) =>
+        name.StartsWith("System", StringComparison.Ordinal) || name is "netstandard" or "mscorlib";
+
     [Fact]
     public void Domain_depends_on_nothing_but_the_runtime() =>
-        References(Domain).Should().OnlyContain(name => name.StartsWith("System", StringComparison.Ordinal));
+        References(Domain).Should().OnlyContain(name => IsFrameworkAssembly(name));
 
     [Theory]
     [InlineData("MongoDB")]
