@@ -17,7 +17,7 @@ Status: **Decided** (default chosen in the documents — can be overruled) · **
 | D4 | Mocking library | **Sprint 1 default: NSubstitute** | S1 | Tech lead | Test Strategy |
 | D5 | ASP.NET Identity on MongoDB | **Sprint 1 default: custom `MongoUserStore`** (password, email, security stamp, lockout stores) — no third-party package | S1 | Tech lead | AspNetCore_Clean_Architecture |
 | D28 | Target framework | **Decided: .NET 10 LTS** — .NET 9 reached end of support (Nov 2026); .NET 11 is STS | S1 | Tech lead | System Architecture Document |
-| D6 | Hosting provider and region | EU or India region close to target customers; compare Hetzner (post-2026 prices) with alternatives | S1 | Founder / DevOps | Infrastructure Costing |
+| D6 | Hosting provider and region | **Owner direction: self-host on the owner's own machine with a public IP; setup postponed.** Requirements: static IP, ISP allows inbound 80/443, Ubuntu Server (dedicated box or VM, not the Windows desktop), only Nginx exposed, GitHub Actions self-hosted runner for deploys (no inbound SSH), encrypted off-site backups, UPS + external uptime monitor; revisit the 99.5% availability target for the pilot. Still needs the domain (D29) for HTTPS — Meta callbacks/webhooks require it | Before staging (no later than S5) | Founder / DevOps | Infrastructure Costing; DevOps Deployment Guide |
 | D7 | Data residency requirements (e.g. EU-only processing) | Decide from target market; affects hosting and AI provider region | S1 | Founder | AI Integration Design |
 | D8 | Dedicated QA engineer from S1 | Yes — isolation and RBAC suites start in S1 | S1 | Founder | Test Strategy |
 | D9 | Sprint start date and confirmed team | 2-week sprints, team as in roadmap assumptions | S1 | Founder | Sprint Roadmap |

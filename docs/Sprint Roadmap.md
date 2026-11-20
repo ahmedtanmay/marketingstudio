@@ -55,7 +55,7 @@ Story IDs refer to User Stories and Acceptance Criteria.md.
 - Solution structure (Clean Architecture), MongoDB, Redis, Docker Compose, Nginx, staging server
 - CI pipeline (build, unit, integration with Testcontainers, security scans); test harness and **two-tenant isolation fixture**
 - Sign up with tenant + trial creation, sign in, refresh, sign out, password reset, email verification (AUTH-1–4, TEN-3, BIL-1 backend)
-- **Decisions due:** email provider, assertion/mocking libraries, MediatR licence, Identity-on-MongoDB approach, hosting provider
+- **Decisions due:** email provider, assertion/mocking libraries, MediatR licence, Identity-on-MongoDB approach. Hosting: owner will self-host on their own machine with a public IP — setup postponed (D6); staging deploy follows once that machine is ready
 - **External:** Stripe account in test mode (activation not needed until S9). Domain registration and Meta Business Verification are **postponed to S5** (Decision Register D29, D30); development uses Meta test users/Pages and `localhost` until then
 
 ### Sprint 2 (weeks 3–4) — Portal Shell & Users · Phase 2

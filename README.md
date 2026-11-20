@@ -86,6 +86,7 @@ Security behaviour (see `Security Architecture.md`):
 | D28 Framework | .NET 10 LTS | — |
 
 ## Not done yet in Sprint 1
-- Stripe account (test mode) and hosting provider — owner actions, not code.
+- Stripe account (test mode) — owner action, not code.
 - Domain registration and Meta Business Verification — postponed to Sprint 5 by owner decision (Decision Register D29, D30).
-- Staging server provisioning and deploy job (needs hosting decision D6).
+- Staging/production server and deploy job — postponed; will be self-hosted on the owner's own machine with a public IP
+  (D6). Plan: Ubuntu Server + Docker Compose + Nginx, GitHub Actions self-hosted runner, off-site backups.
