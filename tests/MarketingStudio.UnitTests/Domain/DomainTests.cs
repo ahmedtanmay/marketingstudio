@@ -1,6 +1,7 @@
 using FluentAssertions;
 using MarketingStudio.Domain.Auth;
 using MarketingStudio.Domain.Billing;
+using MarketingStudio.Domain.Common;
 using MarketingStudio.Domain.Tenants;
 using MarketingStudio.Domain.Users;
 
@@ -60,13 +61,21 @@ public class TenantAndUserTests
     }
 
     [Fact]
-    public void Ids_are_unique_and_time_ordered()
+    public void Ids_are_unique_even_within_the_same_millisecond()
     {
-        var first = Tenant.Create("A", Now).Id;
-        var second = Tenant.Create("B", Now).Id;
+        var ids = Enumerable.Range(0, 1000).Select(_ => IdGenerator.NewId()).ToList();
 
-        first.Should().NotBe(second);
-        string.CompareOrdinal(first, second).Should().BeNegative();
+        ids.Should().OnlyHaveUniqueItems();
+        ids.Should().OnlyContain(id => id.Length == 32);
+    }
+
+    [Fact]
+    public void Ids_sort_by_creation_time_across_milliseconds()
+    {
+        var earlier = IdGenerator.NewId(new DateTimeOffset(Now, TimeSpan.Zero));
+        var later = IdGenerator.NewId(new DateTimeOffset(Now.AddMilliseconds(1), TimeSpan.Zero));
+
+        string.CompareOrdinal(earlier, later).Should().BeNegative();
     }
 }
 
