@@ -21,6 +21,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     private readonly string _keyDirectory = Path.Combine(Path.GetTempPath(), $"ms-it-{Guid.NewGuid():N}");
 
+    public const int TrialSeats = 6;
+
     public CapturingEmailSender Emails { get; } = new();
 
     public async Task InitializeAsync() => await _mongo.StartAsync();
@@ -53,6 +55,9 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("App:PortalBaseUrl", "https://portal.test");
         builder.UseSetting("Email:SmtpHost", "");
         builder.UseSetting("RateLimiting:AuthPermitPerMinute", "100000");
+
+        // Room for one user per role in the RBAC fixture; the seat-limit test fills it up.
+        builder.UseSetting("Plans:Seats:trial", TrialSeats.ToString(System.Globalization.CultureInfo.InvariantCulture));
 
         builder.ConfigureTestServices(services =>
         {

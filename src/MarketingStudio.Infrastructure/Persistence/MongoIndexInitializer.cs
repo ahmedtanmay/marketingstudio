@@ -49,6 +49,17 @@ internal sealed class MongoIndexInitializer(MongoContext context) : IHostedServi
             ],
             cancellationToken);
 
+        await context.Invites.Indexes.CreateManyAsync(
+            [
+                new CreateIndexModel<Invite>(
+                    Builders<Invite>.IndexKeys.Ascending(i => i.TokenHash),
+                    new CreateIndexOptions { Unique = true, Name = "ux_tokenHash" }),
+                new CreateIndexModel<Invite>(
+                    Builders<Invite>.IndexKeys.Ascending(i => i.TenantId).Ascending(i => i.Status).Ascending(i => i.NormalizedEmail),
+                    new CreateIndexOptions { Name = "ix_tenantId_status_email" }),
+            ],
+            cancellationToken);
+
         await context.AuditLog.Indexes.CreateOneAsync(
             new CreateIndexModel<AuditEntry>(
                 Builders<AuditEntry>.IndexKeys.Ascending(a => a.TenantId).Descending(a => a.CreatedAt),

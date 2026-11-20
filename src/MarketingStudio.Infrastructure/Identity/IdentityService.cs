@@ -35,6 +35,16 @@ internal sealed class IdentityService(UserManager<User> users, TimeProvider cloc
         }
     }
 
+    public async Task UpdateUserAsync(User user, CancellationToken cancellationToken)
+    {
+        var result = await users.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            throw new InvalidOperationException(
+                "User update failed: " + string.Join("; ", result.Errors.Select(e => e.Code)));
+        }
+    }
+
     /// <summary>Same semantics as SignInManager.CheckPasswordSignInAsync with lockout enabled.</summary>
     public async Task<PasswordSignInResult> CheckPasswordSignInAsync(
         User user,

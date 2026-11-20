@@ -15,4 +15,5 @@ public interface IAppLinks
     string VerifyEmail(string userId, string token);
     string ResetPassword(string email, string token);
     string ForgotPassword();
+    string AcceptInvite(string token);
 }

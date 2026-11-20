@@ -28,6 +28,7 @@ internal sealed class MongoContext
     public IMongoCollection<User> Users => Database.GetCollection<User>("users");
     public IMongoCollection<RefreshToken> RefreshTokens => Database.GetCollection<RefreshToken>("refreshTokens");
     public IMongoCollection<AuditEntry> AuditLog => Database.GetCollection<AuditEntry>("auditLog");
+    public IMongoCollection<Invite> Invites => Database.GetCollection<Invite>("invites");
 }
 
 /// <summary>Holds the session of the transaction running in the current request scope, if any.</summary>

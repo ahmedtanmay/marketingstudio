@@ -17,6 +17,8 @@ internal abstract class TenantScopedRepository<T>(
 {
     protected ITenantContext TenantContext { get; } = tenantContext;
 
+    protected MongoSessionAccessor Sessions { get; } = sessionAccessor;
+
     protected FilterDefinition<T> Scoped(FilterDefinition<T>? filter = null)
     {
         var tenantFilter = Builders<T>.Filter.Eq(x => x.TenantId, TenantContext.RequireTenantId());
@@ -25,7 +27,7 @@ internal abstract class TenantScopedRepository<T>(
 
     protected Task<T?> FindOneAsync(FilterDefinition<T>? filter, CancellationToken cancellationToken)
     {
-        var session = sessionAccessor.Session;
+        var session = Sessions.Session;
         var find = session is null
             ? collection.Find(Scoped(filter))
             : collection.Find(session, Scoped(filter));
@@ -40,9 +42,30 @@ internal abstract class TenantScopedRepository<T>(
             throw new InvalidOperationException("Cannot write a record for another tenant.");
         }
 
-        var session = sessionAccessor.Session;
+        var session = Sessions.Session;
         return session is null
             ? collection.InsertOneAsync(entity, cancellationToken: cancellationToken)
             : collection.InsertOneAsync(session, entity, cancellationToken: cancellationToken);
+    }
+
+    protected async Task<IReadOnlyList<T>> FindManyAsync(FilterDefinition<T>? filter, CancellationToken cancellationToken) =>
+        await collection.Find(Scoped(filter)).ToListAsync(cancellationToken);
+
+    protected Task<long> CountAsync(FilterDefinition<T>? filter, CancellationToken cancellationToken) =>
+        collection.CountDocumentsAsync(Scoped(filter), cancellationToken: cancellationToken);
+
+    /// <summary>Replaces a record only if it belongs to the caller's tenant.</summary>
+    protected async Task ReplaceAsync(T entity, CancellationToken cancellationToken)
+    {
+        var filter = Scoped(Builders<T>.Filter.Eq(x => x.Id, entity.Id));
+        var session = Sessions.Session;
+        var result = session is null
+            ? await collection.ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken)
+            : await collection.ReplaceOneAsync(session, filter, entity, cancellationToken: cancellationToken);
+
+        if (result.MatchedCount == 0)
+        {
+            throw new Application.Abstractions.NotFoundException();
+        }
     }
 }

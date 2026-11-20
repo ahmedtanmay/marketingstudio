@@ -10,3 +10,15 @@ public sealed class UnauthenticatedException(string message = "Authentication is
 /// <summary>404 — resource does not exist for this tenant (also used for other tenants' resources).</summary>
 public sealed class NotFoundException(string message = "The requested resource was not found.")
     : AppException(message);
+
+/// <summary>
+/// 402 — a plan limit blocks the action (Billing and Subscriptions Design.md → Entitlement Service).
+/// The portal turns this into an upgrade prompt.
+/// </summary>
+public sealed class PlanLimitException(string limitKey, long limit, string message)
+    : AppException(message)
+{
+    public const string Code = "PLAN_LIMIT_REACHED";
+    public string LimitKey { get; } = limitKey;
+    public long Limit { get; } = limit;
+}

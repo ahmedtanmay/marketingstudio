@@ -70,6 +70,30 @@ public sealed class AuthApi(HttpClient http)
 
     public Task<HttpResponseMessage> PostAsync(string path, object body) => http.PostAsJsonAsync(path, body);
 
+    /// <summary>Authenticated request with an optional JSON body.</summary>
+    public Task<HttpResponseMessage> SendAsync(HttpMethod method, string path, string? accessToken, object? body = null)
+    {
+        var request = new HttpRequestMessage(method, path);
+        if (accessToken is not null)
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        }
+
+        if (body is not null)
+        {
+            request.Content = JsonContent.Create(body);
+        }
+
+        return http.SendAsync(request);
+    }
+
+    public async Task<T> GetAsync<T>(string path, string accessToken)
+    {
+        var response = await SendAsync(HttpMethod.Get, path, accessToken);
+        response.StatusCode.Should().Be(HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
+        return (await response.Content.ReadFromJsonAsync<T>())!;
+    }
+
     public static async Task<Session> ReadSessionAsync(HttpResponseMessage response)
     {
         response.StatusCode.Should().Be(HttpStatusCode.OK, await response.Content.ReadAsStringAsync());

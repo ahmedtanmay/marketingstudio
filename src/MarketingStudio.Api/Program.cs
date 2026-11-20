@@ -4,6 +4,7 @@ using MarketingStudio.Api.Errors;
 using MarketingStudio.Api.Security;
 using MarketingStudio.Application;
 using MarketingStudio.Application.Abstractions;
+using MarketingStudio.Domain.Users;
 using MarketingStudio.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -28,8 +29,17 @@ builder.Services.AddScoped<IClientInfo, HttpClientInfo>();
 // Authentication: ES256 access tokens. Every endpoint requires a signed-in user unless marked AllowAnonymous.
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
 builder.Services.ConfigureOptions<JwtBearerConfiguration>();
-builder.Services.AddAuthorizationBuilder()
+var authorization = builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+
+// One policy per permission (RBAC Matrix.md). Endpoints name permissions, never roles.
+foreach (var permission in Permissions.All)
+{
+    authorization.AddPolicy(permission, policy => policy
+        .RequireAuthenticatedUser()
+        .RequireAssertion(ctx => Permissions.RolesHave(
+            ctx.User.FindAll(MarketingStudio.Infrastructure.Tokens.ClaimNames.Role).Select(c => c.Value), permission)));
+}
 
 // Rate limits on auth endpoints, per client IP (Security Architecture.md → API and Web Security).
 var authPermitPerMinute = builder.Configuration.GetValue("RateLimiting:AuthPermitPerMinute", 10);
@@ -83,5 +93,6 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = c => c
     .AllowAnonymous();
 
 app.MapAuthEndpoints();
+app.MapUserEndpoints();
 
 app.Run();

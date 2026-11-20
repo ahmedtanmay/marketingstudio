@@ -18,6 +18,7 @@ public static class DependencyInjection
         });
         services.AddValidatorsFromAssembly(assembly, includeInternalTypes: true);
         services.AddSingleton(TimeProvider.System);
+        services.AddScoped<Users.SeatGuard>();
 
         return services;
     }

@@ -28,6 +28,9 @@ public interface IIdentityService
     /// <summary>Creates the user with a hashed password. Throws if creation fails.</summary>
     Task CreateUserAsync(User user, string password, CancellationToken cancellationToken);
 
+    /// <summary>Saves changes to a user (optimistic concurrency). Throws on conflict.</summary>
+    Task UpdateUserAsync(User user, CancellationToken cancellationToken);
+
     /// <summary>Checks the password and applies lockout rules.</summary>
     Task<PasswordSignInResult> CheckPasswordSignInAsync(User user, string password, CancellationToken cancellationToken);
 

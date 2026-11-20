@@ -1,5 +1,6 @@
 using MarketingStudio.Application.Abstractions;
 using MarketingStudio.Application.Auth;
+using MarketingStudio.Domain.Users;
 using MediatR;
 
 namespace MarketingStudio.Application.Me;
@@ -8,7 +9,11 @@ public sealed record TenantSummary(string Id, string Name, string Status);
 
 public sealed record SubscriptionSummary(string PlanId, string Status, DateTime? TrialEndsAt, int TrialDaysRemaining);
 
-public sealed record MeResponse(UserSummary User, TenantSummary Tenant, SubscriptionSummary? Subscription);
+public sealed record MeResponse(
+    UserSummary User,
+    TenantSummary Tenant,
+    SubscriptionSummary? Subscription,
+    IReadOnlyList<string> Permissions);
 
 /// <summary>Returns the signed-in user with their tenant and subscription. All reads are tenant-scoped.</summary>
 public sealed record GetCurrentUserQuery : IRequest<MeResponse>;
@@ -38,6 +43,7 @@ public sealed class GetCurrentUserQueryHandler(
                     subscription.PlanId,
                     subscription.Status.ToString(),
                     subscription.TrialEndsAt,
-                    subscription.TrialDaysRemaining(now)));
+                    subscription.TrialDaysRemaining(now)),
+            Permissions.ForRoles(user.Roles));
     }
 }

@@ -34,6 +34,9 @@ public static class DependencyInjection
         services.AddScoped<ITenantRepository, TenantRepository>();
         services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IInviteRepository, InviteRepository>();
+        services.Configure<PlanLimitOptions>(configuration.GetSection(PlanLimitOptions.Section));
+        services.AddSingleton<IPlanLimits, ConfiguredPlanLimits>();
         services.AddSingleton<IAuditLog, MongoAuditLog>();
         services.AddHostedService<MongoIndexInitializer>();
         services.AddHealthChecks().AddCheck<MongoHealthCheck>("mongodb", tags: ["ready"]);

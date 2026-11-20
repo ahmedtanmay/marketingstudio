@@ -13,6 +13,13 @@ public static class AuditActions
     public const string PasswordReset = "auth.password_reset";
     public const string EmailVerified = "auth.email_verified";
     public const string TenantCreated = "tenant.created";
+    public const string UserInvited = "user.invited";
+    public const string InviteResent = "user.invite_resent";
+    public const string InviteRevoked = "user.invite_revoked";
+    public const string InviteAccepted = "user.invite_accepted";
+    public const string UserRoleChanged = "user.role_changed";
+    public const string UserDeactivated = "user.deactivated";
+    public const string UserReactivated = "user.reactivated";
 }
 
 /// <summary>Append-only audit record (Security Architecture.md → Audit Logging).</summary>

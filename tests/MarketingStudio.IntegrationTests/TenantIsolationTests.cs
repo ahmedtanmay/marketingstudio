@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using MarketingStudio.Domain.Users;
 using Microsoft.IdentityModel.Tokens;
 
 namespace MarketingStudio.IntegrationTests;
@@ -53,6 +54,34 @@ public class TenantIsolationTests(ApiFactory factory)
         (await _api.MeRawAsync("not.a.jwt")).StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         (await _api.MeRawAsync(TamperTenant(a.AccessToken, "someone-else"))).StatusCode
             .Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    [Trait("Story", "TEN-3")]
+    public async Task Admins_cannot_see_or_change_another_tenants_members_or_invites()
+    {
+        var a = await TeamBuilder.BuildAsync(_api, factory);
+        var b = await _api.RegisterAndLoginAsync();
+        var aViewer = a.ByRole[Roles.Viewer].Auth.User.Id;
+        var aInviteEmail = AuthApi.NewEmail();
+        await TeamBuilder.InviteAsync(_api, factory, a.Admin, aInviteEmail, Roles.Viewer);
+        var aInviteId = (await TeamBuilder.ListInvitesAsync(_api, a.Admin)).Single(i => i.Email == aInviteEmail).Id;
+
+        var bUsers = await TeamBuilder.ListUsersAsync(_api, b);
+        var bInvites = await TeamBuilder.ListInvitesAsync(_api, b);
+        var changeRole = await _api.SendAsync(HttpMethod.Put, $"/api/v1/users/{aViewer}/role", b.AccessToken, new { role = Roles.TenantAdmin });
+        var deactivate = await _api.SendAsync(HttpMethod.Post, $"/api/v1/users/{aViewer}/deactivate", b.AccessToken);
+        var revoke = await _api.SendAsync(HttpMethod.Delete, $"/api/v1/invites/{aInviteId}", b.AccessToken);
+        var resend = await _api.SendAsync(HttpMethod.Post, $"/api/v1/invites/{aInviteId}/resend", b.AccessToken);
+
+        bUsers.Should().ContainSingle().Which.Id.Should().Be(b.Auth.User.Id);
+        bInvites.Should().BeEmpty();
+        changeRole.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        deactivate.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        revoke.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        resend.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        (await TeamBuilder.ListInvitesAsync(_api, a.Admin)).Should().Contain(i => i.Id == aInviteId);
+        (await TeamBuilder.ListUsersAsync(_api, a.Admin)).Single(u => u.Id == aViewer).Role.Should().Be(Roles.Viewer);
     }
 
     /// <summary>Swaps the tid claim in the payload but keeps the original signature.</summary>

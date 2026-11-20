@@ -53,6 +53,8 @@ internal sealed class AppLinks(IOptions<AppLinkOptions> options) : IAppLinks
 
     public string ForgotPassword() => $"{Base}/forgot-password";
 
+    public string AcceptInvite(string token) => $"{Base}/accept-invite?token={Uri.EscapeDataString(token)}";
+
     public string VerifyEmail(string userId, string token) =>
         $"{Base}/verify-email?userId={Uri.EscapeDataString(userId)}&token={Uri.EscapeDataString(token)}";
 

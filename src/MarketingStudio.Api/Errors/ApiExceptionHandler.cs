@@ -37,6 +37,18 @@ internal sealed class ApiExceptionHandler(IProblemDetailsService problems, ILogg
                 Title = "Not found",
                 Detail = notFound.Message,
             },
+            PlanLimitException limit => new ProblemDetails
+            {
+                Status = StatusCodes.Status402PaymentRequired,
+                Title = "Plan limit reached",
+                Detail = limit.Message,
+                Extensions =
+                {
+                    ["code"] = PlanLimitException.Code,
+                    ["limit"] = limit.LimitKey,
+                    ["max"] = limit.Limit,
+                },
+            },
             _ => new ProblemDetails
             {
                 Status = StatusCodes.Status500InternalServerError,
