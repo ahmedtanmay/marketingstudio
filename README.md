@@ -85,4 +85,4 @@ Security behaviour (see `Security Architecture.md`):
 ## Not done yet in Sprint 1
 - Meta Business Verification, Stripe account, hosting provider — owner actions, not code.
 - Staging server provisioning and deploy job (needs hosting decision D6).
-- Push to GitHub (remote not configured yet) — CI runs from the first push.
+- CI runs on every push and pull request: https://github.com/ahmedtanmay/marketingstudio/actions
