@@ -14,6 +14,10 @@ RUN dotnet publish src/MarketingStudio.Api/MarketingStudio.Api.csproj -c Release
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 COPY --from=build /app .
+# Writable dirs for the non-root user: dev-generated keys (/keys) and the Data Protection key ring.
+# A new named volume mounted here inherits this ownership.
+RUN mkdir -p /keys /var/lib/marketingstudio/dataprotection-keys \
+    && chown -R $APP_UID /keys /var/lib/marketingstudio
 USER $APP_UID
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080

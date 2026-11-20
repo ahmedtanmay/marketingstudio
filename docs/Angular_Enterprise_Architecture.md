@@ -4,7 +4,7 @@
 This document defines the Angular architecture for the AI Marketing Studio application portal.
 
 ## Technology Stack
-- Angular 19+
+- Angular 22 (Sprint 2: latest stable)
 - Angular Material
 - NgRx
 - RxJS
@@ -78,7 +78,7 @@ Tenant branding includes:
 - Agent Activity
 
 ## Testing Strategy
-- Jest
+- Vitest (Angular 22 default test runner)
 - Angular Testing Library
 - Cypress E2E (+ cypress-axe for accessibility)
 - Full approach: see Test Strategy.md

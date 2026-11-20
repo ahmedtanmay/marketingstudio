@@ -1,0 +1,14 @@
+{
+  "name": "portal-e2e",
+  "private": true,
+  "description": "Cypress journeys for the portal (Test Strategy.md -> End-to-end tests). Runs in the cypress/included Docker image.",
+  "scripts": {
+    "cy:run": "cypress run --browser chrome"
+  },
+  "devDependencies": {
+    "axe-core": "4.14.1",
+    "cypress": "15.21.2",
+    "cypress-axe": "1.7.0",
+    "typescript": "~6.0.2"
+  }
+}

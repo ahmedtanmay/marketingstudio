@@ -12,3 +12,10 @@ coverage*/
 *.pem
 .env
 .env.*
+
+# Node / Angular
+node_modules/
+.angular/
+portal/dist/
+portal/e2e/cypress/screenshots/
+portal/e2e/cypress/videos/

@@ -43,7 +43,7 @@ Defines how AI Marketing Studio is tested: test levels, tools, environments, tes
 | Area | Tools | What |
 |---|---|---|
 | Backend (Domain, Application, AgentEngine) | xUnit, NSubstitute or Moq, assertion library (see Tooling note) | Domain rules, MediatR handlers, FluentValidation validators, pipeline behaviors, chunker, guardrail rules, credit ledger math, lifecycle state machines, error classification |
-| Angular portal | Jest + Angular Testing Library | Components, NgRx reducers/selectors/effects, guards, interceptors, pipes |
+| Angular portal | Vitest (Angular 22 default) + Angular TestBed | Components, NgRx reducers/selectors/effects, guards, interceptors, pipes |
 | Next.js website | Jest (or Vitest) + React Testing Library | Components, form validation, metadata helpers |
 
 Rules: no network, no database, no real time (`TimeProvider` injected in .NET), run in < 2 minutes per project.
@@ -277,7 +277,7 @@ Every S1/S2 fix includes a regression test that would have caught it.
 ## Tooling Note
 - **FluentAssertions** version 8 and later requires a paid licence for commercial use. Either pin to 7.x, use the community fork **AwesomeAssertions**, or use **Shouldly**. Decide before Phase 1.
 - **Moq** remains usable; **NSubstitute** is an equivalent alternative. Pick one for the whole solution.
-- Angular 19 defaults to Karma/Jasmine, which is deprecated; Jest is set up via a builder/preset (or Vitest as an alternative). Confirm the setup in Phase 2.
+- **Decided in Sprint 2:** the portal uses Angular 22 with its default Vitest runner (Karma is deprecated). Cypress is pinned to 15.x because cypress-axe does not yet support Cypress 16; Cypress runs in the cypress/included Docker image.
 
 ## Open Decisions
 - Assertion library (see Tooling Note) and mocking library.

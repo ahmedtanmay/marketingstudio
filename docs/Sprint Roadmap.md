@@ -62,7 +62,7 @@ Story IDs refer to User Stories and Acceptance Criteria.md.
 - Angular workspace, Material theme, layout, routing, guards, interceptors, NgRx auth/tenant state
 - Sign-in/sign-up/reset UI; invite members; manage users and roles (AUTH-5, AUTH-6)
 - RBAC data-driven test suite; first Cypress journeys + axe
-- **Milestone M1**
+- **Milestone M1** — done except "deployed to staging" (waits for the self-hosted server, D6)
 
 ### Sprint 3 (weeks 5–6) — Brands & Products · Phase 3
 - Brand create/edit, voice configuration, brand assets/media library (MinIO), brand switcher, delete (BRD-1–5)
