@@ -33,9 +33,11 @@ Instagram **personal** accounts are not supported by the API — users must conv
 
 ---
 
-## Meta Platform Setup (prerequisites — start in Phase 1)
+## Meta Platform Setup (prerequisites — start by Sprint 5)
 
-App Review and Business Verification can take several weeks and can block Phase 6. **Start these in Phase 1.**
+Business Verification can take from a few days to several weeks (document rejections) and blocks going live in Phase 6. It needs a registered domain with a privacy-policy page, so both are **postponed to Sprint 5 at the latest** (Decision Register D29, D30). Development before that uses the app in Development mode with test users, test Pages, a test Instagram account and the WhatsApp test number.
+
+**App Review** cannot be submitted early: Meta requires a screencast of each permission in use, so it is submitted once connect + publish work on staging (Sprint 7).
 
 1. Create a Meta Business account and a Meta App (type: Business).
 2. Complete **Business Verification** for the company operating the platform.
@@ -263,7 +265,8 @@ Permissions: connecting/disconnecting channels — Tenant Admin only. Scheduling
 ## Delivery Plan
 | When | Work |
 |---|---|
-| Phase 1 | Meta Business Verification, app creation, privacy/data-deletion pages, start App Review |
+| Sprint 5 (latest) | Domain, one-page site with privacy/terms/data-deletion pages, Meta business portfolio + app, Business Verification |
+| Sprint 7 | Submit App Review with screencasts once connect + publish work on staging; WhatsApp Tech Provider onboarding |
 | Phase 6, week 1 | Connect flows, token encryption, `channelConnections`, webhook endpoint + verification |
 | Phase 6, week 2 | Facebook & Instagram publishers, media pre-signed URLs, `PublishPostJob`, scheduling, Social Agent tools |
 | Phase 6, week 3 | WhatsApp inbound → Support Agent, inbox, insights sync, error handling UI, E2E tests |

@@ -86,5 +86,6 @@ Security behaviour (see `Security Architecture.md`):
 | D28 Framework | .NET 10 LTS | — |
 
 ## Not done yet in Sprint 1
-- Meta Business Verification, Stripe account, hosting provider — owner actions, not code.
+- Stripe account (test mode) and hosting provider — owner actions, not code.
+- Domain registration and Meta Business Verification — postponed to Sprint 5 by owner decision (Decision Register D29, D30).
 - Staging server provisioning and deploy job (needs hosting decision D6).

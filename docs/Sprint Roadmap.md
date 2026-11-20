@@ -31,7 +31,8 @@ Phase 7 (website, parallel)              ███   ███   ███
 Phase 8                                                    ███
 Hardening                                                        ███
 Pilot & launch                                                         ███
-Meta App Review (external) ███████████████████████████ (must be approved by S7)
+Domain + Meta Business Verification (external)  ███ ··· (start by S5, done by S7)
+Meta App Review (external)                                  ███   ███ ··· (submit when publishing works)
 ```
 
 ## Milestones
@@ -55,7 +56,7 @@ Story IDs refer to User Stories and Acceptance Criteria.md.
 - CI pipeline (build, unit, integration with Testcontainers, security scans); test harness and **two-tenant isolation fixture**
 - Sign up with tenant + trial creation, sign in, refresh, sign out, password reset, email verification (AUTH-1–4, TEN-3, BIL-1 backend)
 - **Decisions due:** email provider, assertion/mocking libraries, MediatR licence, Identity-on-MongoDB approach, hosting provider
-- **External:** start Meta Business Verification and App Review; Stripe account setup
+- **External:** Stripe account in test mode (activation not needed until S9). Domain registration and Meta Business Verification are **postponed to S5** (Decision Register D29, D30); development uses Meta test users/Pages and `localhost` until then
 
 ### Sprint 2 (weeks 3–4) — Portal Shell & Users · Phase 2
 - Angular workspace, Material theme, layout, routing, guards, interceptors, NgRx auth/tenant state
@@ -80,6 +81,11 @@ Story IDs refer to User Stories and Acceptance Criteria.md.
 - Content Agent, guardrail pipeline, structured output (AGT-2)
 - Content approval workflow and review queue (CNT-1–3)
 - **Decisions due:** model per tier (initial), image generation in MVP
+- **External (latest start — postponed from S1):**
+  1. Choose the product/brand name and register the domain (D29)
+  2. Publish a one-page site on it with privacy policy and terms (required by Meta and Stripe)
+  3. Create the Meta business portfolio, verify the domain, create the Meta app (Business type)
+  4. Submit Meta Business Verification (D30) — must be complete by S7; rejections can add weeks
 
 ### Sprint 6 (weeks 11–12) — Planner, Campaigns, Evaluation · Phase 5 (part 2) + Website start
 - Planner Agent with streaming chat via SignalR (AGT-1), run history (AGT-4), AI-unavailable handling (AGT-5)
@@ -94,7 +100,7 @@ Story IDs refer to User Stories and Acceptance Criteria.md.
 - Publishers, pre-signed media URLs, `PublishPostJob`, scheduling, calendar, failure handling (SOC-3–6, CNT-4)
 - Social Agent tools
 - **Website:** pricing page from API, blog/docs (MDX) (WEB-2, WEB-4)
-- **Dependency:** Meta App Review approved (otherwise develop against test accounts and slip go-live, not development)
+- **Dependency:** Meta Business Verification complete. Submit **App Review** as soon as connect + publish work on staging (screencasts per permission); development continues against test accounts while review is pending
 
 ### Sprint 8 (weeks 15–16) — WhatsApp, Insights, Analytics · Phase 6 (part 2) + Website
 - WhatsApp connect (Embedded Signup), inbox, Support Agent, human reply, 24-hour window rules (SOC-2, INB-1, INB-2)
@@ -130,7 +136,7 @@ Story IDs refer to User Stories and Acceptance Criteria.md.
 ## Critical Path and Risks
 | Risk | Impact | Mitigation |
 |---|---|---|
-| Meta Business Verification / App Review delayed | Publishing (S7–S8) cannot go live | Start in S1; develop with test accounts; launch can proceed with Facebook/Instagram as "beta" if review is pending |
+| Meta Business Verification / App Review delayed | Publishing (S7–S8) cannot go live | Domain + verification start no later than S5 (postponed from S1 by owner decision); develop with test accounts; launch can proceed with Facebook/Instagram as "beta" if review is pending |
 | AI quality below expectations | M3 demo weak; rework of prompts | Evaluation harness in S6; start golden datasets in S4 |
 | Scope growth in agents | S5–S6 overrun | Post-MVP items stay out (User Stories priorities) |
 | Pen test finds serious issues | Launch delay | Security tests on every PR from S1; ZAP nightly from S2 |

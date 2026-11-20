@@ -31,7 +31,8 @@ marketingstudio.ai
 - JWT Authentication (sign up, sign in, refresh, reset, email verification)
 - Tenant + trial creation at signup
 - Docker Infrastructure, CI pipeline, test harness
-- Start Meta Business Verification and App Review (long lead time; blocks Phase 6)
+- Stripe account in test mode
+- (Domain registration and Meta Business Verification postponed to Sprint 5 — see Sprint Roadmap.md)
 
 ## Phase 2 - Angular Application Portal (2 Weeks · Sprint 2)
 - Angular Workspace

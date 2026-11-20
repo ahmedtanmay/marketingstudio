@@ -26,6 +26,8 @@ Status: **Decided** (default chosen in the documents — can be overruled) · **
 | D12 | Multilingual embeddings | Confirm embedding model covers all brand languages (e.g. Hindi) in S4 evaluation | S4 | AI/ML owner | Knowledge Base Design |
 | D13 | Model per tier | Start Planner and Campaign on **Standard** tier; Reasoning only if evaluation shows a clear gain (5× cost) | S6 | AI/ML owner | AI Integration Design; Infrastructure Costing |
 | D14 | Fallback AI provider | Anthropic Claude as secondary provider | S6 | Tech lead | AI Integration Design |
+| D29 | Product/brand name and domain (`marketingstudio.ai` is a placeholder) | **Postponed by owner to S5.** Check trademark availability first; `.ai` suits the product but costs more than `.com`. Needed before Meta verification, Stripe activation, real email (SPF/DKIM/DMARC) and staging TLS. Code uses it only in three config defaults | S5 | Founder | Infrastructure Costing; System Architecture Document |
+| D30 | When to start Meta Business Verification | **Postponed by owner from S1 to S5 (latest).** Needs D29 first; must be complete by S7. App Review follows in S7 once publishing works | S5 | Founder | Social Integrations Design; Sprint Roadmap |
 | D15 | Image generation in MVP | No — media suggestions/prompts only in MVP; revisit after launch | S5 | Product owner | Agent Specification |
 | D16 | Do "Preview voice" and regenerations consume credits | Yes, show cost before running | S5 | Product owner | UI Screen Flows |
 | D17 | WhatsApp messaging billing | Tenants pay Meta directly (own WABA payment method) | S8 | Founder | Social Integrations Design |
