@@ -46,6 +46,9 @@ integration tests in the Linux SDK container instead (same as CI):
 ./scripts/test-in-docker.ps1
 ```
 
+CI runs both suites, a vulnerable-package check, a secret scan and the Docker build on every push and pull request:
+https://github.com/ahmedtanmay/marketingstudio/actions
+
 Test names carry story IDs (`[Trait("Story", "AUTH-2")]`) from `User Stories and Acceptance Criteria.md`.
 
 ## API (Sprint 1)
@@ -85,4 +88,3 @@ Security behaviour (see `Security Architecture.md`):
 ## Not done yet in Sprint 1
 - Meta Business Verification, Stripe account, hosting provider — owner actions, not code.
 - Staging server provisioning and deploy job (needs hosting decision D6).
-- CI runs on every push and pull request: https://github.com/ahmedtanmay/marketingstudio/actions
