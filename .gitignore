@@ -1,0 +1,14 @@
+bin/
+obj/
+.vs/
+.vscode/
+.idea/
+*.user
+TestResults/
+coverage*/
+
+# Local secrets and keys (JWT signing key, Data Protection key ring)
+.local/
+*.pem
+.env
+.env.*

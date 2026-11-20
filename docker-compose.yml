@@ -1,0 +1,56 @@
+# Local development stack (Sprint 1).
+#   docker compose up -d mongodb redis mailpit   -> run the API from your IDE / `dotnet run`
+#   docker compose up -d --build                 -> everything in containers
+# Production uses the same images with secrets and Nginx (DevOps Deployment Guide.md).
+name: marketingstudio
+
+services:
+  mongodb:
+    image: mongo:8.0
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports: ["27017:27017"]
+    volumes: ["mongo-data:/data/db"]
+    healthcheck:
+      # Initialises the single-node replica set on first start (needed for transactions).
+      test: >
+        mongosh --quiet --eval "try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:27017'}]}).ok }"
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 10s
+
+  redis:
+    image: redis:7.4
+    command: ["redis-server", "--appendonly", "yes"]
+    ports: ["6379:6379"]
+    volumes: ["redis-data:/data"]
+
+  mailpit:
+    # Catches all outgoing email. Inbox UI: http://localhost:8025
+    image: axllent/mailpit:v1.21
+    ports: ["1025:1025", "8025:8025"]
+
+  api:
+    build:
+      context: .
+      dockerfile: src/MarketingStudio.Api/Dockerfile
+    depends_on:
+      mongodb: { condition: service_healthy }
+      mailpit: { condition: service_started }
+    ports: ["8080:8080"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Mongo__ConnectionString: mongodb://mongodb:27017/?replicaSet=rs0&directConnection=true
+      Jwt__Issuer: http://localhost:8080
+      Jwt__SigningKeyPath: /keys/jwt-signing-key.pem
+      Jwt__CreateKeyIfMissing: "true"
+      DataProtection__KeysPath: /keys/dataprotection
+      Email__SmtpHost: mailpit
+      Email__SmtpPort: "1025"
+      App__PortalBaseUrl: http://localhost:4200
+    volumes: ["api-keys:/keys"]
+
+volumes:
+  mongo-data:
+  redis-data:
+  api-keys:
