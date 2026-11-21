@@ -74,6 +74,7 @@ Story IDs refer to User Stories and Acceptance Criteria.md.
 - Upload, ClamAV scan, extraction, chunking, embeddings, Qdrant with enforced filters (KB-1, KB-2)
 - FAQs, product indexing via events, test search page (KB-3, KB-4)
 - Qdrant isolation tests; retrieval evaluation baseline
+- **Status: done** except the formal retrieval-evaluation golden set (moved to S6 with the AI evaluation harness). Deviations: in-process job queue (D32), local Ollama / CI hash embeddings (D33), status polling instead of SignalR
 - **Milestone M2**
 
 ### Sprint 5 (weeks 9–10) — AI Engine & Content · Phase 5 (part 1)

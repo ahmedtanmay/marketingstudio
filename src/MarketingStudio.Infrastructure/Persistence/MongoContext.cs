@@ -32,6 +32,8 @@ internal sealed class MongoContext
     public IMongoCollection<Domain.Brands.Brand> Brands => Database.GetCollection<Domain.Brands.Brand>("brands");
     public IMongoCollection<Domain.Brands.Product> Products => Database.GetCollection<Domain.Brands.Product>("products");
     public IMongoCollection<Domain.Brands.MediaAsset> Media => Database.GetCollection<Domain.Brands.MediaAsset>("mediaAssets");
+    public IMongoCollection<Domain.Knowledge.KnowledgeDocument> KnowledgeDocuments => Database.GetCollection<Domain.Knowledge.KnowledgeDocument>("documents");
+    public IMongoCollection<Domain.Knowledge.Faq> Faqs => Database.GetCollection<Domain.Knowledge.Faq>("faqs");
 }
 
 /// <summary>Holds the session of the transaction running in the current request scope, if any.</summary>

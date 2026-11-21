@@ -157,6 +157,7 @@ export class Shell implements OnInit {
     { label: 'Brand profile', icon: 'storefront', link: '/brand/profile', permission: Permission.BrandsRead },
     { label: 'Products', icon: 'inventory_2', link: '/brand/products', permission: Permission.ProductsRead },
     { label: 'Media', icon: 'photo_library', link: '/brand/media', permission: Permission.BrandsRead },
+    { label: 'Knowledge', icon: 'menu_book', link: '/brand/knowledge', permission: Permission.BrandsRead },
     { label: 'All brands', icon: 'apps', link: '/brands', permission: Permission.BrandsRead },
     { label: 'Team', icon: 'group', link: '/settings/users', permission: Permission.UsersManage },
   ];

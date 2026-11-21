@@ -54,6 +54,9 @@ public interface IPlanLimits
 {
     int MaxSeats(string planId);
     int MaxBrands(string planId);
+    int MaxKnowledgeDocumentsPerBrand(string planId);
+    long MaxKnowledgeStorageBytes(string planId);
+    long MaxKnowledgeFileBytes(string planId);
 }
 
 public interface IAuditLog

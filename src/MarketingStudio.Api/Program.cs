@@ -70,6 +70,13 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 
+// Uploaded documents must be virus-scanned in production (Security Architecture.md → Key Threats).
+if (builder.Environment.IsProduction()
+    && string.Equals(builder.Configuration["VirusScan:Provider"], "None", StringComparison.OrdinalIgnoreCase))
+{
+    throw new InvalidOperationException("VirusScan:Provider=None is not allowed in Production.");
+}
+
 var app = builder.Build();
 
 app.UseForwardedHeaders();
@@ -95,5 +102,6 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = c => c
 app.MapAuthEndpoints();
 app.MapUserEndpoints();
 app.MapBrandEndpoints();
+app.MapKnowledgeEndpoints();
 
 app.Run();

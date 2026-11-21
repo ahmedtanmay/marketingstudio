@@ -54,6 +54,17 @@ public class RbacTests(ApiFactory factory)
         new("POST", "/api/v1/brands/{brandId}/media/", $"/api/v1/brands/{Missing}/media", null, Permissions.BrandContentWrite),
         new("PUT", "/api/v1/brands/{brandId}/media/{assetId}/tags", $"/api/v1/brands/{Missing}/media/{Missing}/tags", new { tags = Array.Empty<string>() }, Permissions.BrandContentWrite),
         new("DELETE", "/api/v1/brands/{brandId}/media/{assetId}", $"/api/v1/brands/{Missing}/media/{Missing}", null, Permissions.BrandContentWrite),
+        new("GET", "/api/v1/brands/{brandId}/knowledge/documents", $"/api/v1/brands/{Missing}/knowledge/documents", null, Permissions.BrandsRead),
+        new("GET", "/api/v1/brands/{brandId}/knowledge/documents/{documentId}", $"/api/v1/brands/{Missing}/knowledge/documents/{Missing}", null, Permissions.BrandsRead),
+        new("POST", "/api/v1/brands/{brandId}/knowledge/documents", $"/api/v1/brands/{Missing}/knowledge/documents", null, Permissions.KnowledgeWrite),
+        new("POST", "/api/v1/brands/{brandId}/knowledge/documents/{documentId}/retry", $"/api/v1/brands/{Missing}/knowledge/documents/{Missing}/retry", null, Permissions.KnowledgeWrite),
+        new("DELETE", "/api/v1/brands/{brandId}/knowledge/documents/{documentId}", $"/api/v1/brands/{Missing}/knowledge/documents/{Missing}", null, Permissions.KnowledgeWrite),
+        new("GET", "/api/v1/brands/{brandId}/knowledge/usage", $"/api/v1/brands/{Missing}/knowledge/usage", null, Permissions.BrandsRead),
+        new("GET", "/api/v1/brands/{brandId}/knowledge/faqs", $"/api/v1/brands/{Missing}/knowledge/faqs", null, Permissions.BrandsRead),
+        new("POST", "/api/v1/brands/{brandId}/knowledge/faqs", $"/api/v1/brands/{Missing}/knowledge/faqs", new { question = "q", answer = "a" }, Permissions.KnowledgeWrite),
+        new("PUT", "/api/v1/brands/{brandId}/knowledge/faqs/{faqId}", $"/api/v1/brands/{Missing}/knowledge/faqs/{Missing}", new { question = "q", answer = "a" }, Permissions.KnowledgeWrite),
+        new("DELETE", "/api/v1/brands/{brandId}/knowledge/faqs/{faqId}", $"/api/v1/brands/{Missing}/knowledge/faqs/{Missing}", null, Permissions.KnowledgeWrite),
+        new("POST", "/api/v1/brands/{brandId}/knowledge/search", $"/api/v1/brands/{Missing}/knowledge/search", new { query = "x" }, Permissions.BrandsRead),
     ];
 
     public static TheoryData<string> RoleNames => new(Roles.TenantRoles);

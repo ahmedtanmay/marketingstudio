@@ -249,7 +249,8 @@ public sealed class UpdateBrandVoiceCommandHandler(
 
 /// <summary>
 /// BRD-5: delete a brand and everything under it (products, media files). The caller must type the
-/// brand's name. Scheduled posts, channels and knowledge are added to this clean-up when they exist.
+/// brand's name. Removes products, media, knowledge documents, FAQs and their search index entries.
+/// Scheduled posts and channels are added to this clean-up when they exist.
 /// </summary>
 public sealed record DeleteBrandCommand(string BrandId, string ConfirmName) : IRequest;
 
@@ -257,6 +258,9 @@ public sealed class DeleteBrandCommandHandler(
     IBrandRepository brands,
     IProductRepository products,
     IMediaRepository media,
+    IKnowledgeDocumentRepository knowledgeDocuments,
+    IFaqRepository faqs,
+    IVectorIndex knowledgeIndex,
     IFileStorage storage,
     ITenantContext context,
     IAuditLog audit,
@@ -273,8 +277,11 @@ public sealed class DeleteBrandCommandHandler(
             throw new ValidationException([new ValidationFailure("confirmName", ConfirmMismatch)]);
         }
 
-        // Files first: if this fails nothing is orphaned in the database pointing to missing files.
+        // Search index first (nothing findable), then files, then records.
+        await knowledgeIndex.DeleteBrandAsync(brand.TenantId, brand.Id, cancellationToken);
         await storage.DeletePrefixAsync(MediaAsset.BrandPrefix(brand.TenantId, brand.Id), cancellationToken);
+        await knowledgeDocuments.DeleteForBrandAsync(brand.Id, cancellationToken);
+        await faqs.DeleteForBrandAsync(brand.Id, cancellationToken);
         await media.DeleteForBrandAsync(brand.Id, cancellationToken);
         await products.DeleteForBrandAsync(brand.Id, cancellationToken);
         await brands.DeleteAsync(brand.Id, cancellationToken);

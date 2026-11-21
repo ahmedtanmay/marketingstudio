@@ -45,6 +45,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/brands/products-page').then((m) => m.ProductsPage),
       },
       {
+        path: 'brand/knowledge',
+        title: 'Knowledge base',
+        canActivate: [permissionGuard(Permission.BrandsRead)],
+        loadComponent: () => import('./features/brands/knowledge-page').then((m) => m.KnowledgePage),
+      },
+      {
         path: 'brand/media',
         title: 'Media library',
         canActivate: [permissionGuard(Permission.BrandsRead)],

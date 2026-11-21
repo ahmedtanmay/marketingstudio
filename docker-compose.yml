@@ -1,6 +1,8 @@
 # Local development stack.
 #   docker compose up -d mongodb redis mailpit seaweedfs   -> run the API from your IDE / `dotnet run`
 #   docker compose up -d --build                           -> everything in containers
+# Knowledge base (Sprint 4): qdrant + clamav + ollama + ollama-model. For a light stack without AI or
+# scanning: EMBEDDINGS_PROVIDER=Hash VIRUS_SCAN_PROVIDER=None KNOWLEDGE_MIN_SCORE=0.1 docker compose up -d ...
 # Production uses the same images with secrets and Nginx (DevOps Deployment Guide.md).
 name: marketingstudio
 
@@ -40,6 +42,34 @@ services:
       - seaweed-data:/data
       - ./deploy/seaweedfs/s3.dev.json:/etc/seaweedfs/s3.json:ro
 
+  qdrant:
+    # Vector index for the knowledge base. REST API: http://localhost:6333
+    image: qdrant/qdrant:v1.15.5
+    ports: ["6333:6333"]
+    volumes: ["qdrant-data:/qdrant/storage"]
+
+  clamav:
+    # Virus scanning for knowledge uploads. First start downloads signatures (a few minutes);
+    # uploads made before it is ready are retried automatically.
+    image: clamav/clamav:1.4
+    volumes: ["clamav-data:/var/lib/clamav"]
+
+  ollama:
+    # Free local embeddings for development (nomic-embed-text, 768 dimensions). Production uses the
+    # configured AI provider (AI Integration Design.md).
+    image: ollama/ollama:0.40.17
+    ports: ["11434:11434"]
+    volumes: ["ollama-data:/root/.ollama"]
+
+  ollama-model:
+    # One-off: downloads the embedding model into the ollama volume, then exits.
+    image: ollama/ollama:0.40.17
+    depends_on: [ollama]
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["sh", "-c", "sleep 3 && ollama pull nomic-embed-text"]
+    restart: "no"
+
   api:
     build:
       context: .
@@ -48,6 +78,7 @@ services:
       mongodb: { condition: service_healthy }
       mailpit: { condition: service_started }
       seaweedfs: { condition: service_started }
+      qdrant: { condition: service_started }
     ports: ["8080:8080"]
     environment:
       ASPNETCORE_ENVIRONMENT: Development
@@ -62,10 +93,22 @@ services:
       Storage__ServiceUrl: http://seaweedfs:8333
       Storage__AccessKey: marketingstudio-dev
       Storage__SecretKey: marketingstudio-dev-secret
+      Qdrant__Url: http://qdrant:6333
+      # Embeddings: Ollama (start the ollama + ollama-model services) or Hash (no AI, keyword-like).
+      Embeddings__Provider: ${EMBEDDINGS_PROVIDER:-Ollama}
+      Embeddings__BaseUrl: http://ollama:11434
+      # Virus scanning: ClamAV (start the clamav service) or None (development only).
+      VirusScan__Provider: ${VIRUS_SCAN_PROVIDER:-ClamAV}
+      VirusScan__Host: clamav
+      Knowledge__MinScore: ${KNOWLEDGE_MIN_SCORE:-0.5}
+      RateLimiting__AuthPermitPerMinute: ${AUTH_RATE_LIMIT:-60}
     volumes: ["api-keys:/keys"]
 
 volumes:
   mongo-data:
   redis-data:
   seaweed-data:
+  qdrant-data:
+  clamav-data:
+  ollama-data:
   api-keys:

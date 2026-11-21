@@ -1,5 +1,11 @@
 # Knowledge Base (RAG) Design
 
+> **Implementation status (Sprint 4):** built as designed, with these differences — endpoints are nested under the brand
+> (`/api/v1/brands/{brandId}/knowledge/...`, consistent with products and media); status updates are polled by the portal
+> every 2 s instead of SignalR (SignalR arrives with agent streaming); jobs run on an in-process queue (D32); object storage is
+> SeaweedFS (D31); the Qdrant collection is named per embedding model (`knowledge_{model}_{dims}`) instead of an alias (D33);
+> website crawling, OCR, hybrid search and reranking remain open.
+
 ## Purpose
 Defines how brand knowledge (documents, product data, FAQs) is ingested, stored, searched and supplied to agents through retrieval-augmented generation (RAG). Delivered in Phase 4; used by the Content, Campaign and Support agents (Agent Specification.md) through the `search_knowledge_base` tool.
 

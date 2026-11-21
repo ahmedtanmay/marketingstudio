@@ -38,16 +38,26 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     private readonly string _keyDirectory = Path.Combine(Path.GetTempPath(), $"ms-it-{Guid.NewGuid():N}");
 
+    /// <summary>Qdrant, as in docker-compose.yml. Embeddings use the deterministic hash provider (no AI needed).</summary>
+    private readonly IContainer _qdrant = new ContainerBuilder("qdrant/qdrant:v1.15.5")
+        .WithPortBinding(6333, true)
+        .WithWaitStrategy(Wait.ForUnixContainer().UntilHttpRequestIsSucceeded(r => r.ForPort(6333).ForPath("/readyz")))
+        .Build();
+
     public const int TrialSeats = 6;
+
+    /// <summary>Detects the standard EICAR test string, like a real scanner would.</summary>
+    public EicarScanner Scanner { get; } = new();
 
     public CapturingEmailSender Emails { get; } = new();
 
-    public async Task InitializeAsync() => await Task.WhenAll(_mongo.StartAsync(), _storage.StartAsync());
+    public async Task InitializeAsync() => await Task.WhenAll(_mongo.StartAsync(), _storage.StartAsync(), _qdrant.StartAsync());
 
     async Task IAsyncLifetime.DisposeAsync()
     {
         await _mongo.DisposeAsync();
         await _storage.DisposeAsync();
+        await _qdrant.DisposeAsync();
         await base.DisposeAsync();
         if (Directory.Exists(_keyDirectory))
         {
@@ -78,6 +88,11 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("Storage:SecretKey", StorageSecretKey);
         builder.UseSetting("Storage:Bucket", "marketingstudio-tests");
         builder.UseSetting("Plans:Brands:trial", "3");
+        builder.UseSetting("Qdrant:Url", $"http://{_qdrant.Hostname}:{_qdrant.GetMappedPublicPort(6333)}");
+        builder.UseSetting("Embeddings:Provider", "Hash");
+        builder.UseSetting("VirusScan:Provider", "None");
+        builder.UseSetting("Knowledge:MinScore", "0.15");
+        builder.UseSetting("Plans:KnowledgeDocumentsPerBrand:trial", "4");
 
         // Room for one user per role in the RBAC fixture; the seat-limit test fills it up.
         builder.UseSetting("Plans:Seats:trial", TrialSeats.ToString(System.Globalization.CultureInfo.InvariantCulture));
@@ -86,6 +101,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         {
             services.RemoveAll<IEmailSender>();
             services.AddSingleton<IEmailSender>(Emails);
+            services.RemoveAll<IVirusScanner>();
+            services.AddSingleton<IVirusScanner>(Scanner);
         });
     }
 
@@ -97,6 +114,33 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 public sealed class ApiTestGroup : ICollectionFixture<ApiFactory>
 {
     public const string Name = "api";
+}
+
+public sealed class EicarScanner : IVirusScanner
+{
+    /// <summary>
+    /// The standard EICAR antivirus test string, assembled at run time so the full signature never sits in
+    /// a source file or DLL (Windows Defender would quarantine it).
+    /// </summary>
+    public static readonly string Eicar = string.Concat(
+        "X5O!P%@AP[4", "\\", "PZX54(P^)7CC)7}$", "EICAR-STANDARD-", "ANTIVIRUS-TEST-FILE!$H+H*");
+
+    /// <summary>Set to simulate the scanner being down.</summary>
+    public bool Unavailable { get; set; }
+
+    public async Task<ScanResult> ScanAsync(Stream content, CancellationToken cancellationToken)
+    {
+        if (Unavailable)
+        {
+            return new ScanResult(ScanOutcome.Unavailable);
+        }
+
+        using var reader = new StreamReader(content, leaveOpen: true);
+        var text = await reader.ReadToEndAsync(cancellationToken);
+        return text.Contains(Eicar, StringComparison.Ordinal)
+            ? new ScanResult(ScanOutcome.Infected, "Eicar-Test-Signature")
+            : new ScanResult(ScanOutcome.Clean);
+    }
 }
 
 public sealed class CapturingEmailSender : IEmailSender

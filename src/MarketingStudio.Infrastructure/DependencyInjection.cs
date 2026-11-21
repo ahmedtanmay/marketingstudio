@@ -52,6 +52,9 @@ public static class DependencyInjection
         services.AddSingleton<IMediaUrlSigner, Storage.DataProtectionMediaUrlSigner>();
         services.AddHostedService<Storage.StorageBucketInitializer>();
 
+        // Knowledge base (Sprint 4): repositories, embeddings, vector index, virus scanning, background worker
+        AddKnowledge(services, configuration);
+
         // Data Protection (key ring on a persistent volume in production)
         var dataProtection = services.AddDataProtection().SetApplicationName("MarketingStudio");
         var keysPath = configuration.GetSection(DataProtectionSettings.Section).Get<DataProtectionSettings>()?.KeysPath;
@@ -102,5 +105,59 @@ public static class DependencyInjection
         }
 
         return services;
+    }
+
+    private static void AddKnowledge(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddScoped<IKnowledgeDocumentRepository, KnowledgeDocumentRepository>();
+        services.AddScoped<IFaqRepository, FaqRepository>();
+        services.Configure<Application.Knowledge.KnowledgeSearchOptions>(configuration.GetSection(Application.Knowledge.KnowledgeSearchOptions.Section));
+
+        // Embeddings: Hash (tests/CI), Ollama (local dev). OpenAI arrives with the AI gateway (Sprint 5).
+        services.Configure<Knowledge.EmbeddingOptions>(configuration.GetSection(Knowledge.EmbeddingOptions.Section));
+        var embedding = configuration.GetSection(Knowledge.EmbeddingOptions.Section).Get<Knowledge.EmbeddingOptions>() ?? new();
+        if (string.Equals(embedding.Provider, "Ollama", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddHttpClient<IEmbeddingService, Knowledge.OllamaEmbeddingService>(c => c.Timeout = TimeSpan.FromMinutes(2));
+        }
+        else if (string.Equals(embedding.Provider, "Hash", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddSingleton<IEmbeddingService, Knowledge.HashEmbeddingService>();
+        }
+        else
+        {
+            throw new InvalidOperationException($"Unknown embedding provider '{embedding.Provider}'. Use Hash or Ollama.");
+        }
+
+        // Vector index (Qdrant REST)
+        services.Configure<Knowledge.QdrantOptions>(configuration.GetSection(Knowledge.QdrantOptions.Section));
+        services.AddHttpClient<Knowledge.QdrantVectorIndex>((sp, c) =>
+        {
+            var qdrant = sp.GetRequiredService<IOptions<Knowledge.QdrantOptions>>().Value;
+            c.BaseAddress = new Uri(qdrant.Url.TrimEnd('/') + "/");
+            if (!string.IsNullOrEmpty(qdrant.ApiKey))
+            {
+                c.DefaultRequestHeaders.Add("api-key", qdrant.ApiKey);
+            }
+        });
+        services.AddTransient<IVectorIndex>(sp => sp.GetRequiredService<Knowledge.QdrantVectorIndex>());
+        services.AddHostedService<Knowledge.QdrantInitializer>();
+
+        // Virus scanning: ClamAV; "None" only outside Production (checked at start-up in the API).
+        services.Configure<Knowledge.VirusScanOptions>(configuration.GetSection(Knowledge.VirusScanOptions.Section));
+        var scan = configuration.GetSection(Knowledge.VirusScanOptions.Section).Get<Knowledge.VirusScanOptions>() ?? new();
+        if (string.Equals(scan.Provider, "None", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddSingleton<IVirusScanner, Knowledge.NoVirusScanner>();
+        }
+        else
+        {
+            services.AddSingleton<IVirusScanner, Knowledge.ClamAvScanner>();
+        }
+
+        services.AddSingleton<ITextExtractor, Knowledge.TextExtractor>();
+        services.AddSingleton<Knowledge.KnowledgeJobScheduler>();
+        services.AddSingleton<IKnowledgeJobScheduler>(sp => sp.GetRequiredService<Knowledge.KnowledgeJobScheduler>());
+        services.AddHostedService<Knowledge.KnowledgeWorker>();
     }
 }

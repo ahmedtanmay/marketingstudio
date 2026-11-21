@@ -83,6 +83,26 @@ internal sealed class MongoIndexInitializer(MongoContext context) : IHostedServi
                 new CreateIndexOptions { Name = "ix_tenantId_brandId_createdAt" }),
             cancellationToken: cancellationToken);
 
+        await context.KnowledgeDocuments.Indexes.CreateManyAsync(
+            [
+                new CreateIndexModel<Domain.Knowledge.KnowledgeDocument>(
+                    Builders<Domain.Knowledge.KnowledgeDocument>.IndexKeys.Ascending(d => d.TenantId).Ascending(d => d.BrandId).Descending(d => d.CreatedAt),
+                    new CreateIndexOptions { Name = "ix_tenantId_brandId_createdAt" }),
+                new CreateIndexModel<Domain.Knowledge.KnowledgeDocument>(
+                    Builders<Domain.Knowledge.KnowledgeDocument>.IndexKeys.Ascending(d => d.TenantId).Ascending(d => d.BrandId).Ascending(d => d.Checksum),
+                    new CreateIndexOptions { Name = "ix_tenantId_brandId_checksum" }),
+                new CreateIndexModel<Domain.Knowledge.KnowledgeDocument>(
+                    Builders<Domain.Knowledge.KnowledgeDocument>.IndexKeys.Ascending(d => d.Status),
+                    new CreateIndexOptions { Name = "ix_status" }),
+            ],
+            cancellationToken);
+
+        await context.Faqs.Indexes.CreateOneAsync(
+            new CreateIndexModel<Domain.Knowledge.Faq>(
+                Builders<Domain.Knowledge.Faq>.IndexKeys.Ascending(f => f.TenantId).Ascending(f => f.BrandId),
+                new CreateIndexOptions { Name = "ix_tenantId_brandId" }),
+            cancellationToken: cancellationToken);
+
         await context.AuditLog.Indexes.CreateOneAsync(
             new CreateIndexModel<AuditEntry>(
                 Builders<AuditEntry>.IndexKeys.Ascending(a => a.TenantId).Descending(a => a.CreatedAt),

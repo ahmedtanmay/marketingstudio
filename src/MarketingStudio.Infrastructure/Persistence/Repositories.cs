@@ -107,6 +107,15 @@ internal sealed class ConfiguredPlanLimits(Microsoft.Extensions.Options.IOptions
     public int MaxBrands(string planId) =>
         options.Value.Brands.TryGetValue(planId, out var brands) ? brands : options.Value.Brands[Domain.Billing.Subscription.TrialPlanId];
 
+    public int MaxKnowledgeDocumentsPerBrand(string planId) => Lookup(options.Value.KnowledgeDocumentsPerBrand, planId);
+
+    public long MaxKnowledgeStorageBytes(string planId) => Lookup(options.Value.KnowledgeStorageMb, planId) * 1024L * 1024L;
+
+    public long MaxKnowledgeFileBytes(string planId) => Lookup(options.Value.KnowledgeMaxFileMb, planId) * 1024L * 1024L;
+
+    private static int Lookup(Dictionary<string, int> limits, string planId) =>
+        limits.TryGetValue(planId, out var value) ? value : limits[Domain.Billing.Subscription.TrialPlanId];
+
     public int MaxSeats(string planId) =>
         options.Value.Seats.TryGetValue(planId, out var seats) ? seats : options.Value.Seats[Domain.Billing.Subscription.TrialPlanId];
 }
@@ -129,6 +138,30 @@ public sealed class PlanLimitOptions
         ["starter"] = 1,
         ["growth"] = 5,
         ["enterprise"] = 1000,
+    };
+
+    public Dictionary<string, int> KnowledgeDocumentsPerBrand { get; set; } = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["trial"] = 10,
+        ["starter"] = 25,
+        ["growth"] = 200,
+        ["enterprise"] = 10000,
+    };
+
+    public Dictionary<string, int> KnowledgeStorageMb { get; set; } = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["trial"] = 100,
+        ["starter"] = 500,
+        ["growth"] = 5120,
+        ["enterprise"] = 1048576,
+    };
+
+    public Dictionary<string, int> KnowledgeMaxFileMb { get; set; } = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["trial"] = 10,
+        ["starter"] = 10,
+        ["growth"] = 20,
+        ["enterprise"] = 50,
     };
 }
 

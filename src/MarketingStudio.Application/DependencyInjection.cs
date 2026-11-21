@@ -1,4 +1,5 @@
 using FluentValidation;
+using MarketingStudio.Application.Abstractions;
 using MarketingStudio.Application.Common;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +20,8 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(assembly, includeInternalTypes: true);
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<Users.SeatGuard>();
+        services.AddScoped<Knowledge.KnowledgeProcessor>();
+        services.AddScoped<BackgroundTenantScope>();
 
         return services;
     }

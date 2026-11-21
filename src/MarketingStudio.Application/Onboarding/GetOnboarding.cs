@@ -25,6 +25,8 @@ public sealed class GetOnboardingQueryHandler(
     IInviteRepository invites,
     IBrandRepository brands,
     IProductRepository products,
+    IKnowledgeDocumentRepository knowledgeDocuments,
+    IFaqRepository faqs,
     TimeProvider clock) : IRequestHandler<GetOnboardingQuery, OnboardingStatus>
 {
     public async Task<OnboardingStatus> Handle(GetOnboardingQuery request, CancellationToken cancellationToken)
@@ -39,7 +41,7 @@ public sealed class GetOnboardingQueryHandler(
             BrandCreated: await brands.CountAsync(cancellationToken) > 0,
             ProductAdded: await products.CountAsync(cancellationToken) > 0,
             TeamInvited: teamInvited,
-            KnowledgeUploaded: false,
+            KnowledgeUploaded: await knowledgeDocuments.CountReadyAsync(cancellationToken) > 0 || await faqs.CountAsync(cancellationToken) > 0,
             ChannelConnected: false,
             FirstPostGenerated: false);
     }

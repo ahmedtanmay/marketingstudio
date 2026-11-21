@@ -85,7 +85,7 @@ export class Dashboard implements OnInit {
       { label: 'Create your first brand', done: s?.brandCreated ?? false, link: can(Permission.BrandsWrite) ? '/brands/new' : undefined, testId: 'step-brand' },
       { label: 'Add your products', done: s?.productAdded ?? false, link: '/brand/products', testId: 'step-products' },
       { label: 'Invite your team', done: s?.teamInvited ?? false, link: can(Permission.UsersManage) ? '/settings/users' : undefined, testId: 'step-team' },
-      { label: 'Upload brand knowledge', done: s?.knowledgeUploaded ?? false, comingSoon: true, testId: 'step-knowledge' },
+      { label: 'Upload brand knowledge', done: s?.knowledgeUploaded ?? false, link: '/brand/knowledge', testId: 'step-knowledge' },
       { label: 'Connect a social channel', done: s?.channelConnected ?? false, comingSoon: true, testId: 'step-channel' },
       { label: 'Generate your first post', done: s?.firstPostGenerated ?? false, comingSoon: true, testId: 'step-post' },
     ];

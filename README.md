@@ -24,7 +24,7 @@ portal/                             Angular 22 portal (Material 3, NgRx Signals,
 Prerequisites: .NET 10 SDK, Node 24, Docker Desktop.
 
 ```powershell
-docker compose up -d mongodb redis mailpit seaweedfs   # MongoDB, Redis, Mailpit, SeaweedFS (S3)
+docker compose up -d mongodb redis mailpit seaweedfs qdrant clamav ollama ollama-model   # data, S3, vectors, virus scan, embeddings
 dotnet run --project src/MarketingStudio.Api     # API on http://localhost:5283
 cd portal; npm ci; npx ng serve                  # portal on http://localhost:4200 (proxies /api to the API)
 ```
@@ -32,11 +32,14 @@ cd portal; npm ci; npx ng serve                  # portal on http://localhost:42
 **Windows with Smart App Control on:** run the API in Docker instead of `dotnet run` and point the portal at it:
 
 ```powershell
-docker compose up -d --build mongodb mailpit seaweedfs api   # API on http://localhost:8080
+docker compose up -d --build mongodb mailpit seaweedfs qdrant clamav ollama ollama-model api   # API on http://localhost:8080
 cd portal; $env:API_URL = 'http://localhost:8080'; npx ng serve
 ```
 
 - Emails (verification, password reset, invites) appear in Mailpit: http://localhost:8025
+- Knowledge base: first start downloads the embedding model (~270 MB) and ClamAV signatures (a few minutes).
+  Light set-up without AI or virus scanning (keyword-like search):
+  `$env:EMBEDDINGS_PROVIDER=Hash; $env:VIRUS_SCAN_PROVIDER=None; $env:KNOWLEDGE_MIN_SCORE=0.1` before `docker compose up`.
 - Development creates a JWT signing key and Data Protection keys under `src/MarketingStudio.Api/.local/` (git-ignored),
   or in the `api-keys` volume when the API runs in Docker.
 - Health: `GET /health/live`, `GET /health/ready`
@@ -99,6 +102,12 @@ Test names carry story IDs (`[Trait("Story", "AUTH-2")]`, `[AUTH-5]` in Cypress)
 | GET / POST (multipart) | `/api/v1/brands/{id}/media` | `brands.read` / `brands.content.write` | BRD-3 |
 | PUT / DELETE | `/api/v1/brands/{id}/media/{assetId}[/tags]` | `brands.content.write` | BRD-3 |
 | GET | `/api/v1/media/files/{token}` | public (signed, 1 h) | BRD-3 |
+| GET / POST (multipart) | `/api/v1/brands/{id}/knowledge/documents` | `brands.read` / `knowledge.write` | KB-1, KB-2 |
+| GET / DELETE | `/api/v1/brands/{id}/knowledge/documents/{docId}` | `brands.read` / `knowledge.write` | KB-2 |
+| POST | `/api/v1/brands/{id}/knowledge/documents/{docId}/retry` | `knowledge.write` | KB-2 |
+| GET | `/api/v1/brands/{id}/knowledge/usage` | `brands.read` | KB-1 |
+| GET / POST / PUT / DELETE | `/api/v1/brands/{id}/knowledge/faqs[/{faqId}]` | `brands.read` / `knowledge.write` | KB-3 |
+| POST | `/api/v1/brands/{id}/knowledge/search` | `brands.read` | KB-4 |
 
 Endpoints require permissions, never role names; the role → permission map in
 `src/MarketingStudio.Domain/Users/Permissions.cs` is the code form of `docs/RBAC Matrix.md`. `RbacTests` checks every
@@ -112,6 +121,8 @@ Security behaviour (see `Security Architecture.md`):
 - Registration and forgot-password respond identically whether or not the email exists.
 - Password: ≥ 10 characters, not on the common-password list (starter list — replace before launch).
 - Media: JPEG/PNG/WebP ≤ 10 MB, type detected from the bytes; files stay in private object storage and are served only through signed links that expire after an hour.
+- Knowledge: uploads are type-checked from their bytes, virus-scanned (ClamAV) and processed in the background;
+  every vector query filters on tenant and brand inside the index client, and results are re-checked before returning.
 - Invites: hashed single-use tokens valid 7 days; pending invites reserve a seat; 402 `PLAN_LIMIT_REACHED` when full.
 - The last active Tenant Admin cannot be downgraded or deactivated; deactivation revokes refresh tokens at once.
 - Tenant comes only from the token; tenant-owned reads go through `TenantScopedRepository`.

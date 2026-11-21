@@ -138,6 +138,7 @@ public sealed class CreateProductCommandHandler(
     IBrandRepository brands,
     IProductRepository products,
     IMediaRepository media,
+    IKnowledgeJobScheduler knowledge,
     ITenantContext context,
     TimeProvider clock) : IRequestHandler<CreateProductCommand, ProductDto>
 {
@@ -148,6 +149,7 @@ public sealed class CreateProductCommandHandler(
         var product = new Product { TenantId = context.RequireTenantId(), BrandId = brand.Id, CreatedAt = now, UpdatedAt = now };
         await product.ApplyAsync(request.Product, media, cancellationToken);
         await products.AddAsync(product, cancellationToken);
+        knowledge.Enqueue(new KnowledgeJob(KnowledgeJobKind.IndexProduct, product.TenantId, product.BrandId, product.Id));
         return product.ToDto();
     }
 }
@@ -159,7 +161,8 @@ public sealed class UpdateProductCommandValidator : AbstractValidator<UpdateProd
     public UpdateProductCommandValidator() => RuleFor(x => x.Product).NotNull().SetValidator(new ProductInputValidator());
 }
 
-public sealed class UpdateProductCommandHandler(IProductRepository products, IMediaRepository media, TimeProvider clock)
+public sealed class UpdateProductCommandHandler(
+    IProductRepository products, IMediaRepository media, IKnowledgeJobScheduler knowledge, TimeProvider clock)
     : IRequestHandler<UpdateProductCommand, ProductDto>
 {
     public async Task<ProductDto> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
@@ -169,18 +172,20 @@ public sealed class UpdateProductCommandHandler(IProductRepository products, IMe
         await product.ApplyAsync(request.Product, media, cancellationToken);
         product.UpdatedAt = clock.GetUtcNow().UtcDateTime;
         await products.UpdateAsync(product, cancellationToken);
+        knowledge.Enqueue(new KnowledgeJob(KnowledgeJobKind.IndexProduct, product.TenantId, product.BrandId, product.Id));
         return product.ToDto();
     }
 }
 
 public sealed record DeleteProductCommand(string BrandId, string ProductId) : IRequest;
 
-public sealed class DeleteProductCommandHandler(IProductRepository products) : IRequestHandler<DeleteProductCommand>
+public sealed class DeleteProductCommandHandler(IProductRepository products, IVectorIndex index) : IRequestHandler<DeleteProductCommand>
 {
     public async Task Handle(DeleteProductCommand request, CancellationToken cancellationToken)
     {
-        _ = await products.GetByIdAsync(request.BrandId, request.ProductId, cancellationToken)
+        var product = await products.GetByIdAsync(request.BrandId, request.ProductId, cancellationToken)
             ?? throw new NotFoundException("Product not found.");
+        await index.DeleteSourceAsync(product.TenantId, product.BrandId, Domain.Knowledge.SourceTypes.Product, product.Id, cancellationToken);
         await products.DeleteAsync(request.BrandId, request.ProductId, cancellationToken);
     }
 }

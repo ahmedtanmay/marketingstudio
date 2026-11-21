@@ -6,6 +6,10 @@ import {
   BrandProfileInput,
   BrandSummary,
   BrandVoice,
+  Faq,
+  KnowledgeDocument,
+  KnowledgeSearchResult,
+  KnowledgeUsage,
   MediaAsset,
   OnboardingStatus,
   PagedResult,
@@ -90,6 +94,50 @@ export class BrandApi {
 
   deleteMedia(brandId: string, assetId: string): Observable<void> {
     return this.http.delete<void>(`/api/v1/brands/${enc(brandId)}/media/${enc(assetId)}`);
+  }
+
+  // ---- knowledge base (KB-1..4) ----
+
+  listDocuments(brandId: string): Observable<KnowledgeDocument[]> {
+    return this.http.get<KnowledgeDocument[]>(`/api/v1/brands/${enc(brandId)}/knowledge/documents`);
+  }
+
+  uploadDocument(brandId: string, file: File): Observable<KnowledgeDocument> {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    return this.http.post<KnowledgeDocument>(`/api/v1/brands/${enc(brandId)}/knowledge/documents`, form);
+  }
+
+  retryDocument(brandId: string, documentId: string): Observable<KnowledgeDocument> {
+    return this.http.post<KnowledgeDocument>(`/api/v1/brands/${enc(brandId)}/knowledge/documents/${enc(documentId)}/retry`, {});
+  }
+
+  deleteDocument(brandId: string, documentId: string): Observable<void> {
+    return this.http.delete<void>(`/api/v1/brands/${enc(brandId)}/knowledge/documents/${enc(documentId)}`);
+  }
+
+  knowledgeUsage(brandId: string): Observable<KnowledgeUsage> {
+    return this.http.get<KnowledgeUsage>(`/api/v1/brands/${enc(brandId)}/knowledge/usage`);
+  }
+
+  listFaqs(brandId: string): Observable<Faq[]> {
+    return this.http.get<Faq[]>(`/api/v1/brands/${enc(brandId)}/knowledge/faqs`);
+  }
+
+  createFaq(brandId: string, faq: { question: string; answer: string }): Observable<Faq> {
+    return this.http.post<Faq>(`/api/v1/brands/${enc(brandId)}/knowledge/faqs`, faq);
+  }
+
+  updateFaq(brandId: string, faqId: string, faq: { question: string; answer: string }): Observable<Faq> {
+    return this.http.put<Faq>(`/api/v1/brands/${enc(brandId)}/knowledge/faqs/${enc(faqId)}`, faq);
+  }
+
+  deleteFaq(brandId: string, faqId: string): Observable<void> {
+    return this.http.delete<void>(`/api/v1/brands/${enc(brandId)}/knowledge/faqs/${enc(faqId)}`);
+  }
+
+  searchKnowledge(brandId: string, query: string): Observable<KnowledgeSearchResult> {
+    return this.http.post<KnowledgeSearchResult>(`/api/v1/brands/${enc(brandId)}/knowledge/search`, { query, topK: 5 });
   }
 
   onboarding(): Observable<OnboardingStatus> {

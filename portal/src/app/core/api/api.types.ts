@@ -72,6 +72,7 @@ export const Permission = {
   BrandContentWrite: 'brands.content.write',
   ProductsRead: 'products.read',
   ProductsWrite: 'products.write',
+  KnowledgeWrite: 'knowledge.write',
   BillingManage: 'billing.manage',
   ChannelsManage: 'channels.manage',
   ContentApprove: 'content.approve',
@@ -175,3 +176,51 @@ export const INDUSTRIES: readonly string[] = [
 ];
 
 export const CURRENCIES: readonly string[] = ['INR', 'USD', 'EUR', 'GBP', 'AED', 'SGD', 'AUD'];
+
+// ---- Sprint 4: knowledge base ----
+
+export type IngestionStatus = 'Uploaded' | 'Processing' | 'Ready' | 'Failed' | 'Rejected';
+
+export interface KnowledgeDocument {
+  id: string;
+  brandId: string;
+  fileName: string;
+  sizeBytes: number;
+  status: IngestionStatus;
+  failureReason: string | null;
+  chunkCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface KnowledgeUsage {
+  documents: number;
+  maxDocuments: number;
+  storageBytes: number;
+  maxStorageBytes: number;
+  maxFileBytes: number;
+}
+
+export interface Faq {
+  id: string;
+  brandId: string;
+  question: string;
+  answer: string;
+  updatedAt: string;
+}
+
+export interface SearchHit {
+  sourceType: 'document' | 'faq' | 'product';
+  sourceId: string;
+  title: string;
+  headingPath: string;
+  text: string;
+  score: number;
+}
+
+export interface KnowledgeSearchResult {
+  hits: SearchHit[];
+  lowConfidence: boolean;
+}
+
+export const KNOWLEDGE_EXTENSIONS = ['.pdf', '.docx', '.txt', '.md', '.html', '.htm'];

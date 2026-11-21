@@ -88,7 +88,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Start API, MongoDB and Mailpit
+      - name: Start API and its services (light knowledge set-up: hash embeddings, no ClamAV)
+        env:
+          EMBEDDINGS_PROVIDER: Hash
+          VIRUS_SCAN_PROVIDER: None
+          KNOWLEDGE_MIN_SCORE: "0.15"
+          AUTH_RATE_LIMIT: "1000"
         run: |
           docker compose up -d --build mongodb mailpit api
           for i in $(seq 1 60); do
