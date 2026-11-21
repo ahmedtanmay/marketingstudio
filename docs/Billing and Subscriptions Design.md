@@ -135,7 +135,7 @@ cancelled / expired --(90 days)--> scheduled for deletion (warning emails at 30,
 
 Scheduled posts are paused, not cancelled, so they resume after payment (posts whose time has passed become `failed` with reason "subscription inactive").
 
-Tenant deletion after retention follows the erasure process in Knowledge Base Design.md and Social Integrations Design.md (vectors, MinIO objects, tokens, conversations).
+Tenant deletion after retention follows the erasure process in Knowledge Base Design.md and Social Integrations Design.md (vectors, SeaweedFS objects, tokens, conversations).
 
 ---
 

@@ -23,7 +23,7 @@ The original MVP spec (4 vCPU, 8 GB RAM, 150 GB SSD) is **too small** once every
 | Redis | 0.5–1 GB |
 | ASP.NET Core API + Hangfire workers | 1.5–2 GB |
 | Next.js website (SSR) | 0.5–1 GB |
-| MinIO | 0.5–1 GB |
+| SeaweedFS | 0.5–1 GB |
 | ClamAV (virus signatures loaded in memory) | 1.5–2 GB |
 | Nginx (+ Angular static files) | < 0.2 GB |
 | Prometheus + Grafana + Loki | 1.5–2 GB |
@@ -36,7 +36,7 @@ The original MVP spec (4 vCPU, 8 GB RAM, 150 GB SSD) is **too small** once every
 ### Recommended MVP spec
 | Environment | Spec | Notes |
 |---|---|---|
-| **Production** | **8 dedicated vCPU, 32 GB RAM, 240 GB NVMe** + 500 GB attached volume for MinIO media | Dedicated vCPU avoids noisy-neighbour slowdowns for MongoDB and Qdrant |
+| **Production** | **8 dedicated vCPU, 32 GB RAM, 240 GB NVMe** + 500 GB attached volume for SeaweedFS media | Dedicated vCPU avoids noisy-neighbour slowdowns for MongoDB and Qdrant |
 | **Staging** | 4 dedicated vCPU, 16 GB RAM | Same images and config; ClamAV and monitoring can be slimmer |
 
 ---
@@ -50,8 +50,8 @@ Example provider: Hetzner Cloud (EU). Equivalent specs from other providers are 
 | Production server | Hetzner CCX33 (8 dedicated vCPU, 32 GB, 240 GB) | €138.49 | ✅ (post-June 2026 price) |
 | Staging server | Hetzner CCX23 (4 dedicated vCPU, 16 GB) | €85.99 | ✅ |
 | Server snapshots/backups | Provider backup option for production (~20% of server price) | ~€28 | ⚠️ verify |
-| Media volume | 500 GB block volume for MinIO | ~€25–30 | ⚠️ verify |
-| Off-site backups | Object storage / storage box in a second location (MongoDB dumps, MinIO, Qdrant snapshots) | ~€10 | ⚠️ verify |
+| Media volume | 500 GB block volume for SeaweedFS | ~€25–30 | ⚠️ verify |
+| Off-site backups | Object storage / storage box in a second location (MongoDB dumps, SeaweedFS, Qdrant snapshots) | ~€10 | ⚠️ verify |
 | Transactional email | Postmark Basic (10k emails) or Amazon SES ($0.10 per 1,000) | $15 (Postmark) / ~$1 (SES) | ✅ |
 | Domain | marketingstudio.ai (.ai domains are priced higher than .com) | ~$7 (≈ $80/yr) | ⚠️ verify |
 | TLS certificates | Let's Encrypt | $0 | ✅ |
@@ -171,8 +171,8 @@ Most tenants will not use their full allowance (typical Growth ≈ 1,050 credits
 | Stage | Trigger | Change | Added monthly cost (approx.) |
 |---|---|---|---|
 | **Phase 1: Single server** | Launch – ~200 tenants | As in Section 2 | — |
-| **Phase 2: Split data tier** | RAM > 75% sustained, MongoDB cache misses rising, Qdrant > ~1M vectors, or p95 API latency over target | Move MongoDB + Qdrant to a second 32 GB server; app server keeps API, web, Redis, MinIO | + ~€140 |
-| **Phase 3: Multi-node** | > ~1,000 tenants, or 99.9% availability commitment | Load balancer, 2+ app nodes, MongoDB replica set (3 nodes), Qdrant replication, MinIO distributed or S3-compatible object storage, separate monitoring node | + ~€600–900 ⚠️ estimate |
+| **Phase 2: Split data tier** | RAM > 75% sustained, MongoDB cache misses rising, Qdrant > ~1M vectors, or p95 API latency over target | Move MongoDB + Qdrant to a second 32 GB server; app server keeps API, web, Redis, SeaweedFS | + ~€140 |
+| **Phase 3: Multi-node** | > ~1,000 tenants, or 99.9% availability commitment | Load balancer, 2+ app nodes, MongoDB replica set (3 nodes), Qdrant replication, SeaweedFS distributed or S3-compatible object storage, separate monitoring node | + ~€600–900 ⚠️ estimate |
 
 Alternative at Phase 3: managed services (MongoDB Atlas, Qdrant Cloud, S3) cost more but reduce operations work; compare against the cost of a part-time DevOps engineer.
 

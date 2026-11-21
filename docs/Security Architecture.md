@@ -42,7 +42,7 @@ Security controls for AI Marketing Studio. Target baseline: **OWASP ASVS Level 2
 - **Input validation:** FluentValidation on every command; request size limits; JSON only.
 - **Rate limiting:** 100 req/min per user, 1,000/min per tenant, 10/min on auth endpoints per IP (Nginx + ASP.NET Core rate limiter with Redis).
 - **SSRF:** the platform makes outbound calls only to configured hosts (LLM providers, Meta, Stripe, email); agents have no generic HTTP tool; a website-crawl feature (post-MVP) must use an allow-list proxy.
-- **File uploads:** see Knowledge Base Design.md → Validate and scan; files are never served from the API origin, only via pre-signed URLs with `Content-Disposition` set.
+- **File uploads:** see Knowledge Base Design.md → Validate and scan; files are served only through short-lived signed API links (`/api/v1/media/files/{token}`); the type is detected from the bytes and only JPEG/PNG/WebP images are accepted for media.
 
 ## AI-Specific Security
 - Retrieved documents and inbound customer messages are wrapped as untrusted data; system prompt forbids following instructions in them.
@@ -54,7 +54,7 @@ Security controls for AI Marketing Studio. Target baseline: **OWASP ASVS Level 2
 ## Data Security
 | Data | At rest | In transit |
 |---|---|---|
-| MongoDB, Qdrant, Redis, MinIO volumes | Encrypted disk volumes (LUKS) on the server — MongoDB Community has no native encryption at rest | Internal Docker network; not exposed publicly |
+| MongoDB, Qdrant, Redis, SeaweedFS volumes | Encrypted disk volumes (LUKS) on the server — MongoDB Community has no native encryption at rest | Internal Docker network; not exposed publicly |
 | Channel tokens, refresh tokens | Field-level: Data Protection encryption (channel tokens), hashing (refresh tokens) | TLS to Meta |
 | Backups | Encrypted before upload to off-site storage | TLS |
 | Passwords | PBKDF2 hash (Identity) | TLS |

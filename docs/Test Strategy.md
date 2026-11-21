@@ -13,7 +13,7 @@ Defines how AI Marketing Studio is tested: test levels, tools, environments, tes
 ## Risk-Based Priorities
 | Risk | Impact | Test focus |
 |---|---|---|
-| Cross-tenant data leak (MongoDB, Qdrant, MinIO, cache) | Critical | Isolation suite on every PR |
+| Cross-tenant data leak (MongoDB, Qdrant, SeaweedFS, cache) | Critical | Isolation suite on every PR |
 | Unapproved / duplicate / wrong-account publishing | Critical | Approval workflow + publishing idempotency tests |
 | Credit overspend / quota bypass | High | Entitlement + concurrency tests |
 | Off-brand or false AI content | High | AI evaluation suite + guardrail tests |
@@ -50,7 +50,7 @@ Rules: no network, no database, no real time (`TimeProvider` injected in .NET), 
 
 ### 2. Integration tests (backend)
 - **ASP.NET Core `WebApplicationFactory`** hosting the real API in-process.
-- **Testcontainers** for MongoDB, Redis, Qdrant and MinIO — real engines, fresh per test run, isolated database/collection per test class.
+- **Testcontainers** for MongoDB, Redis, Qdrant and SeaweedFS — real engines, fresh per test run, isolated database/collection per test class.
 - **WireMock.Net** stubs for external HTTP APIs: LLM providers, Meta Graph API, Stripe, email provider.
 - **Fake LLM** (`FakeChatClient` implementing `IChatClient`) returning recorded responses, so agent flows are deterministic and free.
 - Hangfire jobs executed synchronously in tests via a test job runner.
@@ -94,7 +94,7 @@ These run on **every pull request** and block merge on failure.
 - For every endpoint that takes a resource id: calling it with tenant A's token and tenant B's id returns `404`, and no data changes.
 - For every list/search endpoint: results contain only the caller's tenant/brand.
 - Qdrant: searches with identical query text return only the caller's chunks; deletes by document only affect the caller.
-- MinIO: pre-signed URLs and object keys are scoped to the caller's prefix.
+- Object storage: keys are scoped to the caller's tenant/brand prefix; signed media links name exactly one asset and expire.
 - Redis: cache keys include `tenantId`; a cache hit for A is never served to B.
 - Agent tools: a tool call where the model supplies another tenant's id still uses the run context's tenant.
 - `tenantId` sent in body/query is ignored.

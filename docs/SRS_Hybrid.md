@@ -76,7 +76,7 @@ User stories, acceptance criteria and non-functional requirements: see User Stor
 - Redis
 
 ### Storage
-- MinIO
+- SeaweedFS
 
 ### Scheduler
 - Hangfire

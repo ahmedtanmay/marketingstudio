@@ -24,7 +24,7 @@ portal/                             Angular 22 portal (Material 3, NgRx Signals,
 Prerequisites: .NET 10 SDK, Node 24, Docker Desktop.
 
 ```powershell
-docker compose up -d mongodb redis mailpit      # MongoDB (replica set), Redis, Mailpit
+docker compose up -d mongodb redis mailpit seaweedfs   # MongoDB, Redis, Mailpit, SeaweedFS (S3)
 dotnet run --project src/MarketingStudio.Api     # API on http://localhost:5283
 cd portal; npm ci; npx ng serve                  # portal on http://localhost:4200 (proxies /api to the API)
 ```
@@ -32,7 +32,7 @@ cd portal; npm ci; npx ng serve                  # portal on http://localhost:42
 **Windows with Smart App Control on:** run the API in Docker instead of `dotnet run` and point the portal at it:
 
 ```powershell
-docker compose up -d --build mongodb mailpit api   # API on http://localhost:8080
+docker compose up -d --build mongodb mailpit seaweedfs api   # API on http://localhost:8080
 cd portal; $env:API_URL = 'http://localhost:8080'; npx ng serve
 ```
 
@@ -89,6 +89,16 @@ Test names carry story IDs (`[Trait("Story", "AUTH-2")]`, `[AUTH-5]` in Cypress)
 | DELETE | `/api/v1/invites/{id}` | `users.manage` | AUTH-5 |
 | GET | `/api/v1/invites/lookup?token=` | public (token) | AUTH-5 |
 | POST | `/api/v1/invites/accept` | public (token) | AUTH-5 |
+| GET | `/api/v1/onboarding` | signed in | TEN-1 |
+| GET / POST | `/api/v1/brands` | `brands.read` / `brands.write` | BRD-1 |
+| GET / PUT | `/api/v1/brands/{id}` | `brands.read` / `brands.write` | BRD-1 |
+| PUT | `/api/v1/brands/{id}/voice` | `brands.content.write` | BRD-2 |
+| DELETE | `/api/v1/brands/{id}?confirmName=` | `brands.delete` | BRD-5 |
+| GET / POST / PUT / DELETE | `/api/v1/brands/{id}/products[/{productId}]` | `products.read` / `products.write` | PRD-1 |
+| GET | `/api/v1/brands/{id}/products/categories` | `products.read` | PRD-1 |
+| GET / POST (multipart) | `/api/v1/brands/{id}/media` | `brands.read` / `brands.content.write` | BRD-3 |
+| PUT / DELETE | `/api/v1/brands/{id}/media/{assetId}[/tags]` | `brands.content.write` | BRD-3 |
+| GET | `/api/v1/media/files/{token}` | public (signed, 1 h) | BRD-3 |
 
 Endpoints require permissions, never role names; the role → permission map in
 `src/MarketingStudio.Domain/Users/Permissions.cs` is the code form of `docs/RBAC Matrix.md`. `RbacTests` checks every
@@ -101,6 +111,7 @@ Security behaviour (see `Security Architecture.md`):
 - Lockout after 5 failed sign-ins for 15 minutes; all sign-in failures return the same message.
 - Registration and forgot-password respond identically whether or not the email exists.
 - Password: ≥ 10 characters, not on the common-password list (starter list — replace before launch).
+- Media: JPEG/PNG/WebP ≤ 10 MB, type detected from the bytes; files stay in private object storage and are served only through signed links that expire after an hour.
 - Invites: hashed single-use tokens valid 7 days; pending invites reserve a seat; 402 `PLAN_LIMIT_REACHED` when full.
 - The last active Tenant Admin cannot be downgraded or deactivated; deactivation revokes refresh tokens at once.
 - Tenant comes only from the token; tenant-owned reads go through `TenantScopedRepository`.

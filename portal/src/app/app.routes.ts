@@ -21,6 +21,36 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       { path: 'dashboard', title: 'Dashboard', loadComponent: () => import('./features/dashboard/dashboard').then((m) => m.Dashboard) },
       {
+        path: 'brands',
+        title: 'Brands',
+        canActivate: [permissionGuard(Permission.BrandsRead)],
+        loadComponent: () => import('./features/brands/brand-pages').then((m) => m.BrandsPage),
+      },
+      {
+        path: 'brands/new',
+        title: 'Create a brand',
+        canActivate: [permissionGuard(Permission.BrandsWrite)],
+        loadComponent: () => import('./features/brands/brand-pages').then((m) => m.CreateBrand),
+      },
+      {
+        path: 'brand/profile',
+        title: 'Brand profile',
+        canActivate: [permissionGuard(Permission.BrandsRead)],
+        loadComponent: () => import('./features/brands/brand-pages').then((m) => m.BrandSettings),
+      },
+      {
+        path: 'brand/products',
+        title: 'Products',
+        canActivate: [permissionGuard(Permission.ProductsRead)],
+        loadComponent: () => import('./features/brands/products-page').then((m) => m.ProductsPage),
+      },
+      {
+        path: 'brand/media',
+        title: 'Media library',
+        canActivate: [permissionGuard(Permission.BrandsRead)],
+        loadComponent: () => import('./features/brands/media-page').then((m) => m.MediaPage),
+      },
+      {
         path: 'settings/users',
         title: 'Team',
         canActivate: [permissionGuard(Permission.UsersManage)],

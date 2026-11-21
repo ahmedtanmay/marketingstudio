@@ -65,9 +65,10 @@ Story IDs refer to User Stories and Acceptance Criteria.md.
 - **Milestone M1** — done except "deployed to staging" (waits for the self-hosted server, D6)
 
 ### Sprint 3 (weeks 5–6) — Brands & Products · Phase 3
-- Brand create/edit, voice configuration, brand assets/media library (MinIO), brand switcher, delete (BRD-1–5)
+- Brand create/edit, voice configuration, brand assets/media library (SeaweedFS), brand switcher, delete (BRD-1–5)
 - Products CRUD with search/filter (PRD-1)
 - Onboarding checklist (TEN-1)
+- **Status: done.** Deviations: SeaweedFS instead of MinIO (D31); "Preview voice" waits for the AI engine (Sprint 5); CSV product import (PRD-2) remains post-MVP
 
 ### Sprint 4 (weeks 7–8) — Knowledge Base · Phase 4
 - Upload, ClamAV scan, extraction, chunking, embeddings, Qdrant with enforced filters (KB-1, KB-2)
@@ -97,7 +98,7 @@ Story IDs refer to User Stories and Acceptance Criteria.md.
 
 ### Sprint 7 (weeks 13–14) — Publishing · Phase 6 (part 1) + Website
 - Facebook/Instagram connect, token encryption, webhooks endpoint (SOC-1)
-- Publishers, pre-signed media URLs, `PublishPostJob`, scheduling, calendar, failure handling (SOC-3–6, CNT-4)
+- Publishers, signed media links, `PublishPostJob`, scheduling, calendar, failure handling (SOC-3–6, CNT-4)
 - Social Agent tools
 - **Website:** pricing page from API, blog/docs (MDX) (WEB-2, WEB-4)
 - **Dependency:** Meta Business Verification complete. Submit **App Review** as soon as connect + publish work on staging (screencasts per permission); development continues against test accounts while review is pending

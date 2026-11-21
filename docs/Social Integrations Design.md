@@ -149,7 +149,7 @@ Before scheduling, the Social Agent adapts an approved content item per channel.
 If adaptation changes the text materially (not just hashtags/length trim), the adapted version returns to `pending_review`.
 
 ### Media hosting
-Instagram (and Facebook URL-based uploads) fetch media **from a public URL**. MinIO is private, so `PublishPostJob` generates a **pre-signed MinIO URL** (expiry 1 hour) served through Nginx at `media.marketingstudio.ai`. Images are validated/resized to channel specs before upload.
+Instagram (and Facebook URL-based uploads) fetch media **from a public URL**. Object storage is private, so `PublishPostJob` uses the API’s **signed media link** (expiry 1 hour, absolute URL on the public domain). Images are validated/resized to channel specs before upload.
 
 ### PublishPostJob
 1. Load `contentItem`; abort unless status is `scheduled` and connection is `active`.
@@ -268,7 +268,7 @@ Permissions: connecting/disconnecting channels — Tenant Admin only. Scheduling
 | Sprint 5 (latest) | Domain, one-page site with privacy/terms/data-deletion pages, Meta business portfolio + app, Business Verification |
 | Sprint 7 | Submit App Review with screencasts once connect + publish work on staging; WhatsApp Tech Provider onboarding |
 | Phase 6, week 1 | Connect flows, token encryption, `channelConnections`, webhook endpoint + verification |
-| Phase 6, week 2 | Facebook & Instagram publishers, media pre-signed URLs, `PublishPostJob`, scheduling, Social Agent tools |
+| Phase 6, week 2 | Facebook & Instagram publishers, signed media links, `PublishPostJob`, scheduling, Social Agent tools |
 | Phase 6, week 3 | WhatsApp inbound → Support Agent, inbox, insights sync, error handling UI, E2E tests |
 
 ## Open Decisions

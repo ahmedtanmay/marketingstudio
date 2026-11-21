@@ -110,7 +110,7 @@ As a Marketing Manager, I want to create a brand profile so that agents write in
 - "Preview voice" generates a sample post using the current settings without saving content.
 
 ### BRD-3 Brand assets — MVP, Phase 3
-- Upload logo and images (JPEG/PNG/WebP, max 10 MB each) to the brand media library (MinIO).
+- Upload logo and images (JPEG/PNG/WebP, max 10 MB each) to the brand media library (SeaweedFS).
 - Assets can be tagged and selected when editing content.
 
 ### BRD-4 Switch brand context — MVP, Phase 2
@@ -364,7 +364,7 @@ As a Tenant Admin, I want to choose a plan and pay so that I can keep using the 
 
 ### Availability and reliability
 - Portal and API availability: 99.5% monthly (MVP single-server); 99.9% target after multi-node (Infrastructure Costing.md, Phase 3).
-- Backups: MongoDB daily full + hourly incremental/oplog; MinIO and Qdrant daily; retained 30 days; encrypted.
+- Backups: MongoDB daily full + hourly incremental/oplog; SeaweedFS and Qdrant daily; retained 30 days; encrypted.
 - **RPO ≤ 1 hour, RTO ≤ 4 hours.** Restore tested quarterly.
 - Background jobs survive API restarts (Hangfire persistent storage).
 

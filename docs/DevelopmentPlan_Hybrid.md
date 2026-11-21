@@ -48,7 +48,7 @@ marketingstudio.ai
 - Onboarding Checklist
 
 ## Phase 4 - Knowledge Base (2 Weeks · Sprint 4)
-- MinIO Integration
+- SeaweedFS Integration
 - Document Ingestion Pipeline (extract, chunk, virus scan)
 - Qdrant Integration
 - Embeddings
@@ -110,6 +110,6 @@ Note: the Social Agent and Support Agent are delivered in Phase 6 with the chann
 - MongoDB
 - Redis
 - Qdrant
-- MinIO
+- SeaweedFS
 - ClamAV
 - Hangfire (in API process)

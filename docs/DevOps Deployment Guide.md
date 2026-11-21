@@ -13,7 +13,7 @@ How AI Marketing Studio is built, deployed, configured, backed up, monitored and
 ## Server Baseline
 - **Ubuntu Server 24.04 LTS**, Docker Engine + Docker Compose plugin.
 - Hardening: SSH keys only (no passwords, no root login), firewall allows 22 (restricted IPs), 80, 443 only; fail2ban; unattended security upgrades; time sync.
-- Data volumes on **encrypted disks (LUKS)**; MinIO on the attached 500 GB volume.
+- Data volumes on **encrypted disks (LUKS)**; SeaweedFS on the attached 500 GB volume.
 - Separate non-root deploy user; Docker socket not exposed to containers except where unavoidable.
 
 ## Containers (Docker Compose)
@@ -26,7 +26,7 @@ How AI Marketing Studio is built, deployed, configured, backed up, monitored and
 | mongodb | mongo (pinned major) | internal | Single node with replica set enabled (needed for transactions) |
 | redis | redis (pinned) | internal | AOF persistence; password |
 | qdrant | qdrant/qdrant (pinned) | internal | API key; snapshots enabled |
-| minio | minio/minio (pinned) | internal | Buckets per environment; pre-signed URLs via `media.` host |
+| seaweedfs | chrislusf/seaweedfs (pinned) | internal | S3 API; bucket per environment. Files are served only through API signed links |
 | clamav | clamav/clamav (pinned) | internal | Signature updates daily |
 | prometheus, grafana, loki, promtail | pinned | internal (Grafana via VPN/SSH tunnel or IP allow-list) | Monitoring stack |
 
@@ -40,7 +40,7 @@ All images pinned by version (and digest for third-party images); upgrades go th
 | `app.marketingstudio.ai/api/v1/*` | api (upstream with 2 instances) |
 | `app.marketingstudio.ai/hubs/*` | api (WebSocket upgrade, sticky by connection) |
 | `app.marketingstudio.ai/hangfire` | api — Super Admin only, plus IP allow-list |
-| `media.marketingstudio.ai` | minio (GET only, pre-signed) |
+| `app.marketingstudio.ai/api/v1/media/files/*` | api (signed, expiring links; no separate media host) |
 
 ---
 
@@ -64,7 +64,7 @@ Tag v*       ─▶ promote the same images (no rebuild) ─▶ manual approval 
 3. **Database migrations:** a one-off `api migrate` container applies pending index and data migrations (versioned migration classes, recorded in a `_migrations` collection). Migrations must be **backward-compatible** with the previous release (expand → migrate → contract over two releases).
 4. **Rolling API update:** restart `api-1`, wait for `/health/ready`, then `api-2`; Nginx keeps serving from the healthy instance. Hangfire jobs resume automatically (persistent storage).
 5. Website and nginx containers recreated (seconds of downtime acceptable for the website; portal static files are swapped atomically).
-6. Smoke tests: health endpoints, sign-in with a synthetic user, plans endpoint, one Qdrant search, one MinIO pre-signed URL.
+6. Smoke tests: health endpoints, sign-in with a synthetic user, plans endpoint, one Qdrant search, one signed media link.
 
 ### Rollback
 - Re-deploy the previous image tag (kept in GHCR); takes < 5 minutes.
@@ -73,7 +73,7 @@ Tag v*       ─▶ promote the same images (no rebuild) ─▶ manual approval 
 ## Configuration and Secrets
 - Non-secret config: `appsettings.{Environment}.json` + environment variables in Compose.
 - Secrets: **Docker Secrets** files on the server (root-only, 0400), mounted into containers; populated from the team password manager — never committed.
-- Secrets list: MongoDB/Redis/Qdrant/MinIO credentials, JWT signing key, Data Protection master key, OpenAI and fallback LLM keys, Meta app secret and webhook verify token, Stripe secret and webhook secret, email API key.
+- Secrets list: MongoDB/Redis/Qdrant/SeaweedFS credentials, JWT signing key, Data Protection master key, OpenAI and fallback LLM keys, Meta app secret and webhook verify token, Stripe secret and webhook secret, email API key.
 - Feature flags (configuration-based) for risky features: auto-reply, Reasoning tier, new prompt versions.
 
 ## Backups
@@ -81,7 +81,7 @@ Tag v*       ─▶ promote the same images (no rebuild) ─▶ manual approval 
 |---|---|---|---|
 | MongoDB | `mongodump` (full) + oplog-based incremental | Daily full, hourly incremental | 30 days |
 | Qdrant | Collection snapshots | Daily | 14 days (re-creatable from documents) |
-| MinIO | Mirror to off-site object storage (`mc mirror`) | Hourly | 30 days with versioning |
+| SeaweedFS | Mirror to off-site object storage (`mc mirror`) | Hourly | 30 days with versioning |
 | Redis | AOF/RDB file copy | Daily | 7 days (cache/locks — not critical) |
 | Server config | Git (infrastructure repo) | On change | — |
 
@@ -111,7 +111,7 @@ Tag v*       ─▶ promote the same images (no rebuild) ─▶ manual approval 
 ## Operations
 ### Runbooks (to be written in Sprint 10)
 - Deploy and rollback
-- Restore MongoDB / MinIO / Qdrant from backup
+- Restore MongoDB / SeaweedFS / Qdrant from backup
 - Rotate a leaked secret (per secret type)
 - AI provider outage (force fallback, pause queues)
 - Meta token invalidation wave / app restricted

@@ -40,7 +40,7 @@ A user belongs to exactly one tenant in MVP (multi-workspace membership is post-
 |---|---|
 | **MongoDB** | `TenantRepository<T>` base class adds `tenantId == ctx.TenantId` to every filter and sets it on every insert; `IMongoCollection<T>` is only reachable inside Infrastructure repositories. Every collection's indexes start with `tenantId`. |
 | **Qdrant** | One collection; `tenantId` payload index configured as tenant key; `QdrantKnowledgeStore` always adds `tenantId` + `brandId` `must` filters (Knowledge Base Design.md). |
-| **MinIO** | Object keys prefixed `{tenantId}/{brandId}/…`; the file store checks the prefix against the context before reading, signing or deleting. Pre-signed URLs are short-lived (1 h). |
+| **Object storage (SeaweedFS)** | Object keys prefixed `{tenantId}/{brandId}/…`; keys are built from tenant-scoped records only. Storage is never exposed: files are served through API signed links (Data Protection, 1 h expiry) that name one asset. |
 | **Redis** | Every key namespaced `t:{tenantId}:…`; helper builds keys — no raw string keys in feature code. |
 | **Hangfire** | Jobs receive tenant/brand ids as arguments; job filter restores tenant context; dashboard restricted to Super Admin. |
 | **SignalR** | Connections join groups `tenant:{tenantId}` and `brand:{brandId}` after server-side validation; messages are sent only to those groups. |
@@ -49,7 +49,7 @@ A user belongs to exactly one tenant in MVP (multi-workspace membership is post-
 | **Search indexes / analytics** | Same repository rules; Super Admin aggregates go through explicit admin queries. |
 
 ## Enforcement and Guard Rails
-- **Architecture tests** (e.g. NetArchTest) fail the build if Application or Api code references `IMongoCollection`, the Qdrant client or the MinIO client directly.
+- **Architecture tests** (e.g. NetArchTest) fail the build if Application or Api code references `IMongoCollection`, the Qdrant client or the SeaweedFS client directly.
 - **Route coverage test:** every non-public API route must have a cross-tenant test (Test Strategy.md → Tenant isolation).
 - **Unique indexes** that must be unique per tenant include `tenantId` (e.g. `{tenantId, name}` on brands).
 - **Cross-tenant access** exists only for Super Admin through a separate `IPlatformAdminRepository` used by `/api/v1/admin/*` endpoints, always audit-logged.
@@ -69,8 +69,8 @@ A user belongs to exactly one tenant in MVP (multi-workspace membership is post-
 |---|---|
 | Create (signup) | Tenant + Tenant Admin user + trial subscription in one transaction; default settings |
 | Suspend (non-payment / abuse) | Read-only enforcement; scheduled posts paused; agents disabled (Billing and Subscriptions Design.md) |
-| Export (GDPR / offboarding) | Background job builds a ZIP of tenant data (JSON per collection + MinIO files) available via a time-limited link |
-| Delete (after retention or erasure request) | Delete MongoDB documents by `tenantId`, Qdrant points by `tenantId`, MinIO prefix `{tenantId}/`, Redis keys `t:{tenantId}:*`, revoke channel tokens and unsubscribe webhooks, cancel Stripe customer; record a deletion certificate in the platform audit log |
+| Export (GDPR / offboarding) | Background job builds a ZIP of tenant data (JSON per collection + SeaweedFS files) available via a time-limited link |
+| Delete (after retention or erasure request) | Delete MongoDB documents by `tenantId`, Qdrant points by `tenantId`, SeaweedFS prefix `{tenantId}/`, Redis keys `t:{tenantId}:*`, revoke channel tokens and unsubscribe webhooks, cancel Stripe customer; record a deletion certificate in the platform audit log |
 
 Backups age out under the normal retention (30 days); restores after deletion must re-apply the deletion list.
 

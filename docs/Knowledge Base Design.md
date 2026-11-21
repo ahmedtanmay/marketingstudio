@@ -15,7 +15,7 @@ Defines how brand knowledge (documents, product data, FAQs) is ingested, stored,
 
 | Source | How it arrives | Embedded? | Notes |
 |---|---|---|---|
-| Uploaded documents (PDF, DOCX, TXT, MD, HTML) | Portal upload → MinIO | Yes | Brand guidelines, product sheets, FAQs, policies |
+| Uploaded documents (PDF, DOCX, TXT, MD, HTML) | Portal upload → SeaweedFS | Yes | Brand guidelines, product sheets, FAQs, policies |
 | Product records | `products` collection | Yes | Re-embedded on create/update via `ProductAddedEvent` / `ProductUpdatedEvent` |
 | FAQ entries (Q&A pairs typed in the portal) | Portal form | Yes | Each Q&A = one chunk; high value for Support Agent |
 | Brand profile (tone, audience, banned terms) | `brands` collection | **No** | Small and always needed — injected directly into the system prompt |
@@ -29,7 +29,7 @@ Defines how brand knowledge (documents, product data, FAQs) is ingested, stored,
 ```text
 Portal upload
   -> API: POST /api/v1/knowledge/documents
-     -> MinIO (raw file, key: {tenantId}/{brandId}/kb/{documentId}/{fileName})
+     -> SeaweedFS (raw file, key: {tenantId}/{brandId}/kb/{documentId}/{fileName})
      -> MongoDB documents (status: uploaded)
      -> Hangfire job: IngestDocumentJob
           1. Validate & scan
@@ -64,7 +64,7 @@ Agent run
 ### 1. Validate and scan
 - Allowed types: `.pdf`, `.docx`, `.txt`, `.md`, `.html`. Content type is checked from the file bytes, not the extension.
 - Max file size: 20 MB (configurable per plan).
-- Virus scan with ClamAV (container in Docker Compose). Infected files → status `rejected`, file deleted from MinIO.
+- Virus scan with ClamAV (container in Docker Compose). Infected files → status `rejected`, file deleted from SeaweedFS.
 - SHA-256 checksum; identical file already in the same brand → reject as duplicate.
 
 ### 2. Extract text
@@ -177,12 +177,12 @@ Agents receive source ids with each chunk. Content items store `sourceRefs` (chu
 ## Updates and Deletion
 | Event | Action |
 |---|---|
-| Document replaced (new version uploaded) | Ingest new version; on success delete old points by `documentId`; old MinIO object kept 30 days |
-| Document deleted | Delete Qdrant points by `documentId` filter, then MinIO object, then MongoDB record |
+| Document replaced (new version uploaded) | Ingest new version; on success delete old points by `documentId`; old SeaweedFS object kept 30 days |
+| Document deleted | Delete Qdrant points by `documentId` filter, then SeaweedFS object, then MongoDB record |
 | Product created/updated | Re-embed product chunk (upsert by deterministic ID) |
 | Product deleted | Delete points by `sourceId` |
-| Brand deleted | Delete all points with `brandId`; delete MinIO prefix `{tenantId}/{brandId}/` |
-| Tenant deleted / offboarded | Delete all points with `tenantId`; delete MinIO prefix `{tenantId}/` (GDPR erasure) |
+| Brand deleted | Delete all points with `brandId`; delete SeaweedFS prefix `{tenantId}/{brandId}/` |
+| Tenant deleted / offboarded | Delete all points with `tenantId`; delete SeaweedFS prefix `{tenantId}/` (GDPR erasure) |
 | Embedding model changed | Background re-index into new collection version, switch alias |
 
 ---
@@ -217,7 +217,7 @@ Permissions: Tenant Admin, Marketing Manager and Content Manager can manage know
 
 ## Testing
 - Unit: chunker (sizes, overlap, heading paths), extractors per format, deterministic point IDs.
-- Integration (Testcontainers: Qdrant, MongoDB, MinIO): full ingest → search; replace/delete flows.
+- Integration (Testcontainers: Qdrant, MongoDB, SeaweedFS): full ingest → search; replace/delete flows.
 - **Isolation test (required gate):** two tenants with identical documents; every search and delete path must return/affect only the caller's tenant and brand.
 
 ## Observability
@@ -229,7 +229,7 @@ Permissions: Tenant Admin, Marketing Manager and Content Manager can manage know
 ## Delivery Plan (Phase 4, 2 weeks)
 | Week | Work |
 |---|---|
-| 1 | Upload endpoint, MinIO storage, ClamAV, `documents` lifecycle, extractors, chunker, unit tests |
+| 1 | Upload endpoint, SeaweedFS storage, ClamAV, `documents` lifecycle, extractors, chunker, unit tests |
 | 1 | Qdrant collection + alias + payload indexes, `QdrantKnowledgeStore` with enforced filters |
 | 2 | Embedding service, `IngestDocumentJob`, product/FAQ indexing via domain events |
 | 2 | Retriever + `search_knowledge_base` tool, portal search test page, isolation & evaluation tests |

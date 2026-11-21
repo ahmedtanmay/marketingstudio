@@ -127,7 +127,7 @@ Append-only.
 - tenantId
 - brandId
 - fileName
-- storageKey (MinIO object key)
+- storageKey (SeaweedFS object key)
 - contentType
 - sizeBytes
 - checksum (SHA-256)

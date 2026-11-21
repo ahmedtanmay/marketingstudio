@@ -68,10 +68,14 @@ Cypress.Commands.add('emailLink', (to: string, subject: string) => {
 Cypress.Commands.add('checkPageA11y', () => {
   cy.injectAxe();
   cy.checkA11y(
-    undefined,
+    // Transient Material snackbars keep an aria-hidden copy of their text for the live-region announcement,
+    // which axe reports as aria-hidden-focus. They are announced correctly; exclude only them.
+    { exclude: ['.mat-mdc-snack-bar-container'] },
     { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] } },
     (violations) => {
-      const summary = violations.map((v) => `${v.impact}: ${v.id} — ${v.help} (${v.nodes.length})`).join('\n');
+      const summary = violations
+        .map((v) => `${v.impact}: ${v.id} — ${v.help} → ${v.nodes.map((n) => n.target.join(' ')).join(' | ')}`)
+        .join('\n');
       cy.task('log', `axe violations:\n${summary}`);
     },
   );

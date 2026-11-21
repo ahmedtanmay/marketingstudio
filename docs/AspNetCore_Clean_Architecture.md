@@ -1,7 +1,7 @@
 # ASP.NET Core Clean Architecture
 
 ## Purpose
-This document defines the backend architecture for the AI Marketing Studio platform using ASP.NET Core 10 (LTS), Clean Architecture, CQRS, MongoDB, Redis, Qdrant, MinIO, and AI integrations.
+This document defines the backend architecture for the AI Marketing Studio platform using ASP.NET Core 10 (LTS), Clean Architecture, CQRS, MongoDB, Redis, Qdrant, SeaweedFS, and AI integrations.
 
 ## Architecture Principles
 - Separation of Concerns
@@ -45,7 +45,7 @@ Contains:
 - Redis
 - OpenAI
 - Qdrant
-- MinIO
+- SeaweedFS
 - External Integrations
 
 ## API Layer
@@ -83,7 +83,7 @@ Tenant context is resolved from JWT.
 - Semantic Search
 - RAG Support
 
-## MinIO Usage
+## SeaweedFS Usage
 - Images
 - Videos
 - Documents
